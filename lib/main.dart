@@ -71,7 +71,7 @@ class _MyhomepageState extends State<Myhomepage> {
                 width: 300,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(50),
-                  color: Colors.green[500],
+                  color: const Color.fromARGB(255, 76, 176, 79),
                 ),
                 child: TextButton(
                   onPressed: () {
