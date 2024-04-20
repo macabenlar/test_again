@@ -15,7 +15,7 @@ class LogInTeacher extends StatefulWidget {
 
 class _LogInTeacherState extends State<LogInTeacher> {
   // ignore: non_constant_identifier_names
-  final TextEditingController _IDnum = TextEditingController();
+  final TextEditingController _email = TextEditingController();
   final TextEditingController _pwd = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -49,14 +49,14 @@ class _LogInTeacherState extends State<LogInTeacher> {
                 ),
               ),
               TextFormField(
-                keyboardType: TextInputType.number,
-                controller: _IDnum,
-                validator: (idnum) =>
-                    idnum!.length > 3 ? "Please put atleast 8 numbers" : null,
+                keyboardType: TextInputType.emailAddress,
+                controller: _email,
+                validator: (email) =>
+                    email!.length > 3 ? "" : null,
                 decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.numbers),
-                  labelText: "ID Number",
-                  hintText: "Please Enter Your ID",
+                  prefixIcon: Icon(Icons.email),
+                  labelText: "Email Address",
+                  hintText: "Please Enter Your Email",
                   border: OutlineInputBorder(
                     borderSide: BorderSide(),
                   ),

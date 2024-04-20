@@ -9,7 +9,7 @@ class SignUpStudent extends StatefulWidget {
 
 class _SignUpStudentState extends State<SignUpStudent> {
   final GlobalKey<FormState> _formKey = GlobalKey();
-  final TextEditingController _id = TextEditingController();
+  final TextEditingController _email = TextEditingController();
   final TextEditingController _fname = TextEditingController();
   final TextEditingController _mname = TextEditingController();
   final TextEditingController _lname = TextEditingController();
@@ -19,7 +19,7 @@ class _SignUpStudentState extends State<SignUpStudent> {
 
   @override
   void dispose() {
-    _id.dispose();
+    _email.dispose();
     _fname.dispose();
     _mname.dispose();
     _lname.dispose();
@@ -55,12 +55,12 @@ class _SignUpStudentState extends State<SignUpStudent> {
               ),
               TextFormField(
                 keyboardType: TextInputType.number,
-                controller: _id,
-                validator: (id) =>
-                    id!.length > 7 ? "Please put atleast 8 numbers" : null,
+                controller: _email,
+                validator: (email) =>
+                    email!.length > 7 ? "Please put atleast 8 numbers" : null,
                 decoration: const InputDecoration(
-                  labelText: "ID Number",
-                  hintText: "Please Enter Your ID",
+                  labelText: "Email Address",
+                  hintText: "Please Enter Your Email Address",
                   border: OutlineInputBorder(
                     borderSide: BorderSide(),
                   ),

@@ -18,7 +18,7 @@ class _StudentDrawerState extends State<StudentDrawer> {
             width: double.infinity,
             child: DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.green[300],
+                color: const Color(0xFF15A323),
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(30),
                   bottomRight: Radius.circular(
@@ -38,7 +38,7 @@ class _StudentDrawerState extends State<StudentDrawer> {
                       top: 1,
                     ),
                     child: Text(
-                      "Ephraim Macabendong",
+                      "Dan Ephraim Macabenlar",
                       style:
                           TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     ),
@@ -60,12 +60,8 @@ class _StudentDrawerState extends State<StudentDrawer> {
           ListTile(leading: const Icon(Icons.person),title: const Text("Profile"),onTap: () {
             Navigator.pop(context);
           },),
-          ListTile(leading: const Icon(Icons.note_add),title: const Text("Assessments"),onTap: () {
-            Navigator.pop(context);
-          },),
-          ListTile(leading: const Icon(Icons.computer),title: const Text("Students"),onTap: () {
-            Navigator.pop(context);
-          },),
+          
+          
           const SizedBox(
             height: 170,
           ),

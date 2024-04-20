@@ -9,7 +9,7 @@ class SignUpTeacher extends StatefulWidget {
 
 class _SignUpTeacherState extends State<SignUpTeacher> {
   final TextEditingController _fname = TextEditingController();
-  final TextEditingController _id = TextEditingController();
+  final TextEditingController _email = TextEditingController();
   final TextEditingController _mname = TextEditingController();
   final TextEditingController _lname = TextEditingController();
   final TextEditingController _pwd = TextEditingController();
@@ -19,7 +19,7 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
 
   @override
   void dispose() {
-    _id.dispose();
+    _email.dispose();
     _fname.dispose();
     _mname.dispose();
     _lname.dispose();
@@ -58,8 +58,8 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
                 ),
                 TextFormField(
                   decoration: const InputDecoration(
-                    label: Text("ID Number"),
-                    hintText: "Please Enter Your ID",
+                    label: Text("Email Address"),
+                    hintText: "Please Enter Your Email Address",
                     border: OutlineInputBorder(
                       borderSide: BorderSide(),
                     ),

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "564580384660",
+    "project_id": "eduassess-52e66",
+    "storage_bucket": "eduassess-52e66.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:564580384660:android:9772723531c7022b9bd981",
+        "android_client_info": {
+          "package_name": "com.example.test_again"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdGqRS5jxn0j1aLPdSwl3UDRkMKw6N_GE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

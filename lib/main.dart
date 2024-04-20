@@ -1,32 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:test_again/log_in_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:test_again/Screens/log_in_page.dart';
+import 'package:test_again/teacher/assessment_page.dart';
 
-void main() {
-  runApp(
-    const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: MyApp(),
-    ),
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
   );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const Myhomepage();
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        scaffoldBackgroundColor: const Color(0xFFEFECEC),
+      ),
+      home: const MyHomePage(),
+    );
   }
 }
 
-class Myhomepage extends StatefulWidget {
-  const Myhomepage({super.key});
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({Key? key}) : super(key: key);
 
-  @override
-  State<Myhomepage> createState() => _MyhomepageState();
-}
-
-class _MyhomepageState extends State<Myhomepage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,7 +41,7 @@ class _MyhomepageState extends State<Myhomepage> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(
+              SizedBox(
                 width: double.infinity,
               ),
               Image.asset(
@@ -47,19 +50,28 @@ class _MyhomepageState extends State<Myhomepage> {
                 width: 150,
                 fit: BoxFit.fill,
               ),
-              const Text(
-                "Welcome to EduAssess App!",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 25.0,
-                  fontWeight: FontWeight.w700,
-                ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Welcome to EduAssess App!",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 25.0,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Revolutionizing Learning Through Assessment!",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
-              const Text(
-                "Revolutionizing Learning Through Assessment!",
-                style: TextStyle(),
-              ),
-              const SizedBox(
+              SizedBox(
                 width: 280,
                 child: Text(
                   "At EduAssess, we believe in the transformative power of education. Our mission is to empower learners and educators alike by providing innovative assessment solutions that foster meaningful learning experiences. We understand that assessment is not just about testing; it's about understanding, growth, and continuous improvement.",
@@ -71,16 +83,14 @@ class _MyhomepageState extends State<Myhomepage> {
                 width: 300,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(50),
-                  color: const Color(0xFF15A323), 
+                  color: const Color(0xFF15A323),
                 ),
                 child: TextButton(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) {
-                          return const SignIn();
-                        },
+                        builder: (context) => const SignIn(),
                       ),
                     );
                   },

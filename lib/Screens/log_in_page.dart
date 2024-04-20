@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+// ignore: unnecessary_import
+import 'package:flutter/widgets.dart';
 import 'package:test_again/sign_up_page.dart';
 import 'package:test_again/student/student_login.dart';
 import 'package:test_again/teacher/teacher_login.dart';
@@ -17,22 +19,15 @@ class _SignInState extends State<SignIn> {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Center(
-              heightFactor: 2,
-              child: IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.arrow_back_sharp),
-              ),
+            
+            const SizedBox(
+              height: 20,
             ),
-            // SizedBox(
-            //   height: 20,
-            // ),
             SizedBox(
-              height: 200,
-              width: 200,
+              height: 150,
+              width: 150,
               child: Image.asset(
                 "assets/images/logo.png",
                 fit: BoxFit.fill,
@@ -59,9 +54,9 @@ class _SignInState extends State<SignIn> {
                 Container(
                   height: 50,
                   width: 250,
-                  decoration: BoxDecoration(
-                    color: Colors.green[400],
-                    borderRadius: const BorderRadius.all(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF15A323),
+                    borderRadius: BorderRadius.all(
                       Radius.circular(50),
                     ),
                   ),
@@ -79,23 +74,21 @@ class _SignInState extends State<SignIn> {
                         ),
                       );
                     },
-                    child: const Text("Log In as a Teacher"),
+                    child: const Text("Log In as a Teacher", style: TextStyle(color: Colors.white),
                   ),
+                ),
                 ),
               ],
             ),
-            const SizedBox(
-              height: 25,
-            ),
-            const Text(
-              "OR",
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
+            const Align(
+              alignment: Alignment.center,
+              child: Text(
+                "OR",
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(
-              height: 25,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -112,9 +105,9 @@ class _SignInState extends State<SignIn> {
                 Container(
                   height: 50,
                   width: 250,
-                  decoration: BoxDecoration(
-                    color: Colors.green[400],
-                    borderRadius: const BorderRadius.all(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF15A323),
+                    borderRadius: BorderRadius.all(
                       Radius.circular(50),
                     ),
                   ),
@@ -129,7 +122,7 @@ class _SignInState extends State<SignIn> {
                         ),
                       );
                     },
-                    child: const Text("Log In as a Student"),
+                    child: const Text("Log In as a Student", style: TextStyle(color: Colors.white),),
                   ),
                 ),
               ],
@@ -137,6 +130,7 @@ class _SignInState extends State<SignIn> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                
                 const Text("Don't have an account?"),
                 TextButton(
                   onPressed: () {

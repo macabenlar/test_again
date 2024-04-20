@@ -1,5 +1,3 @@
-// ignore_for_file: file_names
-
 import 'package:flutter/material.dart';
 import 'student_sign_up.dart';
 import 'student_home_page.dart';
@@ -15,7 +13,7 @@ class LogInStudent extends StatefulWidget {
 
 class _LogInStudentState extends State<LogInStudent> {
   // ignore: non_constant_identifier_names
-  final TextEditingController _IDnum = TextEditingController();
+  final TextEditingController _email = TextEditingController();
   final TextEditingController _pwd = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -49,14 +47,14 @@ class _LogInStudentState extends State<LogInStudent> {
                 ),
               ),
               TextFormField(
-                keyboardType: TextInputType.number,
-                controller: _IDnum,
-                validator: (idnum) =>
-                    idnum!.length > 3 ? "Please put atleast 8 numbers" : null,
+                keyboardType: TextInputType.emailAddress,
+                controller: _email,
+                validator: (email) =>
+                    email!.length > 3 ? "Please put atleast 8 numbers" : null,
                 decoration: const InputDecoration(
                   prefixIcon: Icon(Icons.numbers),
-                  labelText: "ID Number",
-                  hintText: "Please Enter Your ID",
+                  labelText: "Email Address",
+                  hintText: "Please Enter Your Email Address",
                   border: OutlineInputBorder(
                     borderSide: BorderSide(),
                   ),
