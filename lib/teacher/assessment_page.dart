@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:test_again/widgets/add_button.dart'; // Import the CustomAddButton widget
 import 'assessment_quizzes.dart'; // Import the assessment_quizzes.dart file
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
-import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseFirestore; // Import Firestore
+import 'package:test_again/widgets/story_list_widget.dart'; // Import the StoryListWidget
 
 class AssessmentPage extends StatefulWidget {
   const AssessmentPage({Key? key}) : super(key: key);
@@ -33,6 +33,13 @@ class _AssessmentPageState extends State<AssessmentPage> {
       setState(() {
         isAddingStory = false;
       });
+      // Show a snackbar with the success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Added Story Successfully'),
+          duration: Duration(seconds: 2), // Set the duration for the snackbar
+        ),
+      );
     }).catchError((error) {
       // Error adding the story
       print('Error adding story: $error');
@@ -91,27 +98,33 @@ class _AssessmentPageState extends State<AssessmentPage> {
       ),
       body: Stack(
         children: [
-          Align(
-            alignment: Alignment.topLeft,
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: CustomAddButton( // Use CustomAddButton widget instead of ElevatedButton
-                onPressed: () {
-                  setState(() {
-                    isAddingStory = true;
-                  });
-                },
-                titleController: titleController,
-                bodyController: bodyController,
+          // Separate section for StoryListWidget
+          Positioned.fill(
+            top: 0,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 200.0),
+                child: StoryListWidget(), // Display the list of stories
               ),
             ),
           ),
-          Center(
-            child: Text(
-              'Stories',
-              style: TextStyle(fontSize: 24),
+
+          // Separate section for CustomAddButton
+          Positioned(
+            top: 16.0,
+            left: 16.0,
+            child: CustomAddButton(
+              onPressed: () {
+                setState(() {
+                  isAddingStory = true;
+                });
+              },
+              titleController: titleController,
+              bodyController: bodyController,
             ),
           ),
+
+          // Section for the Add Story form when isAddingStory is true
           if (isAddingStory)
             Positioned(
               bottom: 16.0,
