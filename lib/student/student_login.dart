@@ -5,19 +5,20 @@ import 'student_home_page.dart';
 final _formKey = GlobalKey<FormState>();
 
 class LogInStudent extends StatefulWidget {
-  const LogInStudent({super.key});
+  const LogInStudent({Key? key}) : super(key: key);
 
   @override
   State<LogInStudent> createState() => _LogInStudentState();
 }
 
 class _LogInStudentState extends State<LogInStudent> {
-  // ignore: non_constant_identifier_names
   final TextEditingController _email = TextEditingController();
   final TextEditingController _pwd = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false, // Add this line to prevent the black and yellow overlay
       body: Padding(
         padding: const EdgeInsets.all(15.0),
         child: Form(
@@ -26,12 +27,6 @@ class _LogInStudentState extends State<LogInStudent> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.arrow_back_sharp),
-              ),
               Container(
                 margin: const EdgeInsets.only(
                   top: 50,
@@ -50,9 +45,9 @@ class _LogInStudentState extends State<LogInStudent> {
                 keyboardType: TextInputType.emailAddress,
                 controller: _email,
                 validator: (email) =>
-                    email!.length > 3 ? "Please put atleast 8 numbers" : null,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.numbers),
+                    email!.length > 3 ? "Please put at least 8 characters" : null,
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.email),
                   labelText: "Email Address",
                   hintText: "Please Enter Your Email Address",
                   border: OutlineInputBorder(
@@ -65,10 +60,10 @@ class _LogInStudentState extends State<LogInStudent> {
               ),
               TextFormField(
                 controller: _pwd,
-                validator: (pwd) => pwd!.length > 5 ? "heelow" : null,
-                decoration: const InputDecoration(
+                validator: (pwd) => pwd!.length > 5 ? "hello" : null,
+                obscureText: true,
+                decoration: InputDecoration(
                   prefixIcon: Icon(Icons.lock),
-                  suffixIcon: Icon(Icons.visibility),
                   labelText: "Password",
                   hintText: "Please Enter Your password",
                   border: OutlineInputBorder(
@@ -90,7 +85,7 @@ class _LogInStudentState extends State<LogInStudent> {
                             height: 100,
                             alignment: Alignment.center,
                             child: TextFormField(
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide(),
                                 ),
@@ -114,10 +109,16 @@ class _LogInStudentState extends State<LogInStudent> {
                                   Navigator.pop(context);
                                 },
                                 child: const Text("Cancel"),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                ),
                               ),
                               ElevatedButton(
                                 onPressed: () {},
                                 child: const Text("Send!"),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                ),
                               ),
                             ],
                           ),
@@ -128,6 +129,7 @@ class _LogInStudentState extends State<LogInStudent> {
                 },
                 child: const Text(
                   "Forgot Password?",
+                  style: TextStyle(color: Colors.blue),
                 ),
               ),
               const SizedBox(
@@ -191,5 +193,3 @@ class _LogInStudentState extends State<LogInStudent> {
     );
   }
 }
-
-

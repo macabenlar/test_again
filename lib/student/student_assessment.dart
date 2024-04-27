@@ -7,7 +7,7 @@ import '../models/question_model.dart';
 import '../widgets/option_card.dart';
 
 class StudentAssessment extends StatefulWidget {
- const StudentAssessment({Key? key}) : super(key: key);
+ const StudentAssessment({super.key});
 
  @override
  State<StudentAssessment> createState() => _StudentAssessmentState();

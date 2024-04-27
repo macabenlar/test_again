@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:test_again/widgets/add_button.dart'; // Import the CustomAddButton widget
-import 'assessment_quizzes.dart'; // Import the assessment_quizzes.dart file
-import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseFirestore; // Import Firestore
-import 'package:test_again/widgets/story_list_widget.dart'; // Import the StoryListWidget
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:test_again/widgets/story_list_widget.dart';
+import 'package:test_again/teacher/story_detail_page.dart';
+import 'package:test_again/widgets/add_button.dart';
+import 'assessment_quizzes.dart';
 
 class AssessmentPage extends StatefulWidget {
   const AssessmentPage({Key? key}) : super(key: key);
@@ -12,68 +13,70 @@ class AssessmentPage extends StatefulWidget {
 }
 
 class _AssessmentPageState extends State<AssessmentPage> {
-  Color passagesColor = Colors.yellow; // Set initial color for Passages text to yellow
-  Color quizzesColor = Colors.white; // Initial color for Quizzes
+  Color passagesColor = Colors.yellow;
+  Color quizzesColor = Colors.white;
   TextEditingController titleController = TextEditingController();
   TextEditingController bodyController = TextEditingController();
   bool isAddingStory = false;
 
   void addStory() {
-    // Example code to add a story to Firestore
     FirebaseFirestore.instance.collection('stories').add({
       'title': titleController.text,
       'body': bodyController.text,
     }).then((value) {
-      // Successfully added the story
-      print('Story added successfully!');
-      // Clear the text fields after adding the story
+      String docId = value.id;
       titleController.clear();
       bodyController.clear();
-      // Hide the input fields and show the "Add" button again
       setState(() {
         isAddingStory = false;
       });
-      // Show a snackbar with the success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Added Story Successfully'),
-          duration: Duration(seconds: 2), // Set the duration for the snackbar
+          duration: Duration(seconds: 2),
         ),
       );
+      navigateToStoryDetail(docId, titleController.text, bodyController.text);
     }).catchError((error) {
-      // Error adding the story
       print('Error adding story: $error');
     });
+  }
+
+  void navigateToStoryDetail(String docId, String title, String body) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StoryDetailPage(docId: docId, title: title, body: body),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, // Disable the back button
-        backgroundColor: Color(0xFF15A323), // Set the AppBar color
-        elevation: 0, // Remove app bar shadow
+        automaticallyImplyLeading: false,
+        backgroundColor: Color(0xFF15A323),
+        elevation: 0,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             GestureDetector(
-              onTap: () {
-                // Do nothing when clicking on "Passages"
-              },
+              onTap: () {},
               child: Text(
                 'Passages',
                 style: TextStyle(
                   fontSize: 25,
-                  fontWeight: FontWeight.bold, // Make the text bold
-                  color: passagesColor, // Set text color to passagesColor
+                  fontWeight: FontWeight.bold,
+                  color: passagesColor,
                 ),
               ),
             ),
             Container(
-              width: 2, // Width of the line
-              height: 20, // Height of the line
-              margin: EdgeInsets.symmetric(horizontal: 10), // Adjust margin as needed
-              color: Colors.white, // Color of the line
+              width: 2,
+              height: 20,
+              margin: EdgeInsets.symmetric(horizontal: 10),
+              color: Colors.white,
             ),
             GestureDetector(
               onTap: () {
@@ -88,8 +91,8 @@ class _AssessmentPageState extends State<AssessmentPage> {
                 'Quizzes',
                 style: TextStyle(
                   fontSize: 25,
-                  fontWeight: FontWeight.bold, // Make the text bold
-                  color: quizzesColor, // Set text color to quizzesColor
+                  fontWeight: FontWeight.bold,
+                  color: quizzesColor,
                 ),
               ),
             ),
@@ -98,18 +101,20 @@ class _AssessmentPageState extends State<AssessmentPage> {
       ),
       body: Stack(
         children: [
-          // Separate section for StoryListWidget
           Positioned.fill(
             top: 0,
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.only(top: 200.0),
-                child: StoryListWidget(), // Display the list of stories
+                padding: const EdgeInsets.only(top: 100.0),
+                child: StoryListWidget(
+                  onTapStory: (title, body) {
+                  navigateToStoryDetail('', title, body);
+                  },
+
+                ),
               ),
             ),
           ),
-
-          // Separate section for CustomAddButton
           Positioned(
             top: 16.0,
             left: 16.0,
@@ -123,8 +128,6 @@ class _AssessmentPageState extends State<AssessmentPage> {
               bodyController: bodyController,
             ),
           ),
-
-          // Section for the Add Story form when isAddingStory is true
           if (isAddingStory)
             Positioned(
               bottom: 16.0,

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:test_again/Screens/log_in_page.dart';
-// ignore: unused_import
-import 'package:test_again/teacher/assessment_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

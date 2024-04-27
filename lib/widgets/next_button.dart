@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../constant.dart';
 
 class NextButton extends StatelessWidget {
-  const NextButton({Key? key, required this.nextQuestion}) : super(key: key);
+  const NextButton({super.key, required this.nextQuestion});
   final VoidCallback nextQuestion;
 
   @override
@@ -13,12 +13,13 @@ class NextButton extends StatelessWidget {
       child: FloatingActionButton(
         onPressed: nextQuestion,
         backgroundColor: neutralColor,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0), // Adjust padding as needed
+        child: const Padding(
+          padding: EdgeInsets.all(8.0), // Adjust padding as needed
           child: Text(
             'Next Question',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16), // Adjust font size as needed
+            // ignore: unnecessary_const
+            style: const TextStyle(fontSize: 16), // Adjust font size as needed
           ),
         ),
       ),

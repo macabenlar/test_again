@@ -1,31 +1,100 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUpTeacher extends StatefulWidget {
-  const SignUpTeacher({super.key});
+  const SignUpTeacher({Key? key}) : super(key: key);
 
   @override
   State<SignUpTeacher> createState() => _SignUpTeacherState();
 }
 
 class _SignUpTeacherState extends State<SignUpTeacher> {
-  final TextEditingController _fname = TextEditingController();
   final TextEditingController _email = TextEditingController();
-  final TextEditingController _mname = TextEditingController();
-  final TextEditingController _lname = TextEditingController();
-  final TextEditingController _pwd = TextEditingController();
-  final TextEditingController _cpwd = TextEditingController();
-  bool _obscure = false;
-  int _value = 1;
+  final TextEditingController _password = TextEditingController();
+  final TextEditingController _confirmPassword = TextEditingController();
+
+  bool _isButtonDisabled = true;
+  String? _errorMessage;
+  bool _showPassword = false;
+  bool _showConfirmPassword = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _email.addListener(_validateInputs);
+    _password.addListener(_validateInputs);
+    _confirmPassword.addListener(_validateInputs);
+  }
 
   @override
   void dispose() {
     _email.dispose();
-    _fname.dispose();
-    _mname.dispose();
-    _lname.dispose();
-    _pwd.dispose();
-    _cpwd.dispose();
+    _password.dispose();
+    _confirmPassword.dispose();
     super.dispose();
+  }
+
+  void _validateInputs() {
+    setState(() {
+      if (_email.text.isNotEmpty &&
+          _password.text.isNotEmpty &&
+          _confirmPassword.text.isNotEmpty &&
+          _password.text == _confirmPassword.text &&
+          _password.text.length >= 6) {
+        _isButtonDisabled = false;
+        _errorMessage = null;
+      } else {
+        _isButtonDisabled = true;
+        if (_password.text != _confirmPassword.text) {
+          _errorMessage = 'Passwords do not match';
+        } else {
+          _errorMessage = 'Please fill in all fields and ensure the password is at least 6 characters long.';
+        }
+      }
+    });
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _showPassword = !_showPassword;
+    });
+  }
+
+  void _toggleConfirmPasswordVisibility() {
+    setState(() {
+      _showConfirmPassword = !_showConfirmPassword;
+    });
+  }
+
+  Future<void> signUp() async {
+    if (_isButtonDisabled) {
+      return; // Do not proceed with signup if button is disabled
+    }
+
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _email.text,
+        password: _password.text,
+      );
+      // Handle successful signup, show a success message, and navigate to the login page
+      print('User signed up: ${userCredential.user?.email}');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Registration successful!'),
+      ));
+      Navigator.pop(context); // Navigate back to the login page
+    } catch (e) {
+      // Handle signup errors
+      print('Signup Error: $e');
+      String errorMessage = 'Registration failed. Please try again.';
+      if (e is FirebaseAuthException) {
+        if (e.code == 'email-already-in-use') {
+          errorMessage = 'The email address is already in use. Please use a different email.';
+        }
+      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(errorMessage),
+      ));
+    }
   }
 
   @override
@@ -39,16 +108,6 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Center(
-                  child: IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(
-                      Icons.arrow_back,
-                    ),
-                  ),
-                ),
                 const Text(
                   "Teacher Registration Page",
                   style: TextStyle(
@@ -57,169 +116,59 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
                   ),
                 ),
                 TextFormField(
+                  controller: _email,
                   decoration: const InputDecoration(
-                    label: Text("Email Address"),
-                    hintText: "Please Enter Your Email Address",
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(),
-                    ),
-                  ),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        decoration: const InputDecoration(
-                          label: Text("First Name"),
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                    Expanded(
-                      child: TextFormField(
-                        decoration: const InputDecoration(
-                          label: Text("Middle Name"),
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                    Expanded(
-                      child: TextFormField(
-                        decoration: const InputDecoration(
-                          label: Text("Last Name"),
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  height: 55,
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(
-                        5,
-                      ),
-                    ),
-                    border: Border.all(
-                      color: const Color.fromARGB(255, 88, 88, 88),
-                      // width: 2.0,
-                    ),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Row(
-                        children: [
-                          Radio(
-                            value: 1,
-                            groupValue: _value,
-                            onChanged: (value) {
-                              setState(
-                                () {
-                                  _value = value!;
-                                },
-                              );
-                            },
-                          ),
-                          const SizedBox(
-                            child: Text(
-                              "Male",
-                            ),
-                          )
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Radio(
-                            value: 2,
-                            groupValue: _value,
-                            onChanged: (value) {
-                              setState(
-                                () {
-                                  _value = value!;
-                                },
-                              );
-                            },
-                          ),
-                          const SizedBox(
-                            child: Text(
-                              "Female",
-                            ),
-                          )
-                        ],
-                      ),
-                    ],
+                    labelText: "Email Address",
+                    hintText: "Enter Your Email Address",
                   ),
                 ),
                 TextFormField(
-                  obscureText: _obscure,
+                  controller: _password,
+                  obscureText: !_showPassword,
                   decoration: InputDecoration(
+                    labelText: "Password",
+                    hintText: "Enter Your Password",
                     suffixIcon: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _obscure = !_obscure;
-                        });
-                      },
-                      icon: Icon(
-                        _obscure ? Icons.visibility : Icons.visibility_off,
-                      ),
-                    ),
-                    label: const Text("Password"),
-                    hintText: "Please Enter Your Password",
-                    border: const OutlineInputBorder(
-                      borderSide: BorderSide(),
+                      icon: _showPassword ? Icon(Icons.visibility) : Icon(Icons.visibility_off),
+                      onPressed: _togglePasswordVisibility,
                     ),
                   ),
                 ),
                 TextFormField(
-                  obscureText: _obscure,
+                  controller: _confirmPassword,
+                  obscureText: !_showConfirmPassword,
                   decoration: InputDecoration(
-                    label: const Text("Confirm Password"),
-                    hintText: "Please Confirm your Password",
-                    suffixIcon: IconButton(onPressed: (){
-                      setState(() {
-                        _obscure = !_obscure;
-                      });
-                    }, icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off,),),
-                    border: const OutlineInputBorder(
-                      borderSide: BorderSide(),
+                    labelText: "Confirm Password",
+                    hintText: "Confirm Your Password",
+                    suffixIcon: IconButton(
+                      icon: _showConfirmPassword ? Icon(Icons.visibility) : Icon(Icons.visibility_off),
+                      onPressed: _toggleConfirmPasswordVisibility,
                     ),
                   ),
                 ),
+                if (_errorMessage != null)
+                  Text(
+                    _errorMessage!,
+                    style: TextStyle(color: Colors.red),
+                  ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                  onPressed: () {},
-                  child: const Center(
-                    heightFactor: 2,
-                    child: Text(
-                      "Submit",
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
+                  onPressed: _isButtonDisabled ? null : signUp,
+                  child: const Text(
+                    "Submit",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ),
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Already have an acount?"),
+                    const Text("Already have an account?"),
                     TextButton(
                       onPressed: () {
                         Navigator.pop(context);
