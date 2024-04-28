@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpTeacher extends StatefulWidget {
   const SignUpTeacher({Key? key}) : super(key: key);
@@ -9,10 +10,11 @@ class SignUpTeacher extends StatefulWidget {
 }
 
 class _SignUpTeacherState extends State<SignUpTeacher> {
-  final TextEditingController _email = TextEditingController();
-  final TextEditingController _password = TextEditingController();
-  final TextEditingController _confirmPassword = TextEditingController();
-
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   bool _isButtonDisabled = true;
   String? _errorMessage;
   bool _showPassword = false;
@@ -21,31 +23,37 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
   @override
   void initState() {
     super.initState();
-    _email.addListener(_validateInputs);
-    _password.addListener(_validateInputs);
-    _confirmPassword.addListener(_validateInputs);
+    _emailController.addListener(_validateInputs);
+    _passwordController.addListener(_validateInputs);
+    _confirmPasswordController.addListener(_validateInputs);
+    _firstNameController.addListener(_validateInputs);
+    _lastNameController.addListener(_validateInputs);
   }
 
   @override
   void dispose() {
-    _email.dispose();
-    _password.dispose();
-    _confirmPassword.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     super.dispose();
   }
 
   void _validateInputs() {
     setState(() {
-      if (_email.text.isNotEmpty &&
-          _password.text.isNotEmpty &&
-          _confirmPassword.text.isNotEmpty &&
-          _password.text == _confirmPassword.text &&
-          _password.text.length >= 6) {
+      if (_emailController.text.isNotEmpty &&
+          _passwordController.text.isNotEmpty &&
+          _confirmPasswordController.text.isNotEmpty &&
+          _firstNameController.text.isNotEmpty &&
+          _lastNameController.text.isNotEmpty &&
+          _passwordController.text == _confirmPasswordController.text &&
+          _passwordController.text.length >= 6) {
         _isButtonDisabled = false;
         _errorMessage = null;
       } else {
         _isButtonDisabled = true;
-        if (_password.text != _confirmPassword.text) {
+        if (_passwordController.text != _confirmPasswordController.text) {
           _errorMessage = 'Passwords do not match';
         } else {
           _errorMessage = 'Please fill in all fields and ensure the password is at least 6 characters long.';
@@ -73,23 +81,32 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
 
     try {
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _email.text,
-        password: _password.text,
+        email: _emailController.text,
+        password: _passwordController.text,
       );
-      // Handle successful signup, show a success message, and navigate to the login page
-      print('User signed up: ${userCredential.user?.email}');
+
+      // Add user details to Firestore
+      await FirebaseFirestore.instance.collection('Users').doc(userCredential.user!.uid).set({
+        'email': _emailController.text,
+        'role': 'teacher',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      await FirebaseFirestore.instance.collection('Teachers').doc(userCredential.user!.uid).set({
+        'firstname': _firstNameController.text,
+        'lastname': _lastNameController.text,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Registration successful!'),
+        content: Text('Registration successful! Welcome!'),
       ));
       Navigator.pop(context); // Navigate back to the login page
     } catch (e) {
-      // Handle signup errors
-      print('Signup Error: $e');
+      // Handle errors in sign up
       String errorMessage = 'Registration failed. Please try again.';
-      if (e is FirebaseAuthException) {
-        if (e.code == 'email-already-in-use') {
-          errorMessage = 'The email address is already in use. Please use a different email.';
-        }
+      if (e is FirebaseAuthException && e.code == 'email-already-in-use') {
+        errorMessage = 'The email address is already in use. Please use a different email.';
       }
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(errorMessage),
@@ -103,11 +120,12 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
       body: Padding(
         padding: const EdgeInsets.all(15.0),
         child: Form(
-          child: SafeArea(
+          child: SingleChildScrollView( // Changed to SingleChildScrollView to prevent overflow when keyboard appears
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                SizedBox(height: 100), // Increased space at the top to push everything lower
                 const Text(
                   "Teacher Registration Page",
                   style: TextStyle(
@@ -115,15 +133,29 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+               TextFormField(
+                  controller: _firstNameController,
+                  decoration: const InputDecoration(
+                    labelText: "First Name",
+                    hintText: "Enter Your First Name",
+                  ),
+                ),
                 TextFormField(
-                  controller: _email,
+                  controller: _lastNameController,
+                  decoration: const InputDecoration(
+                    labelText: "Last Name",
+                    hintText: "Enter Your Last Name",
+                  ),
+                ),
+                TextFormField(
+                  controller: _emailController,
                   decoration: const InputDecoration(
                     labelText: "Email Address",
                     hintText: "Enter Your Email Address",
                   ),
                 ),
                 TextFormField(
-                  controller: _password,
+                  controller: _passwordController,
                   obscureText: !_showPassword,
                   decoration: InputDecoration(
                     labelText: "Password",
@@ -135,7 +167,7 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
                   ),
                 ),
                 TextFormField(
-                  controller: _confirmPassword,
+                  controller: _confirmPasswordController,
                   obscureText: !_showConfirmPassword,
                   decoration: InputDecoration(
                     labelText: "Confirm Password",
@@ -146,6 +178,7 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
                     ),
                   ),
                 ),
+                
                 if (_errorMessage != null)
                   Text(
                     _errorMessage!,

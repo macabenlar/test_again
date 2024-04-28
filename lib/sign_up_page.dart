@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test_again/student/student_sign_up.dart';
-import 'package:test_again/teacher/teacher_sign_up_.dart';
+import 'package:test_again/teacher/teacher_sign_up.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
