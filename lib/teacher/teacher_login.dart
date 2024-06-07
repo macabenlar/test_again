@@ -33,7 +33,7 @@ class _LogInTeacherState extends State<LogInTeacher> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => const TeacherHomePage(),
+              builder: (context) => TeacherHomePage(teacherId: userCredential.user!.uid), // Pass teacherId here
             ),
           );
         } else {
@@ -93,7 +93,7 @@ class _LogInTeacherState extends State<LogInTeacher> {
                 keyboardType: TextInputType.emailAddress,
                 controller: _email,
                 validator: (email) => email!.isNotEmpty ? null : 'Please enter your email',
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   prefixIcon: Icon(Icons.email),
                   labelText: "Email Address",
                   hintText: "Please Enter Your Email",
@@ -121,7 +121,7 @@ class _LogInTeacherState extends State<LogInTeacher> {
                   ),
                   labelText: "Password",
                   hintText: "Please Enter Your Password",
-                  border: OutlineInputBorder(
+                  border: const OutlineInputBorder(
                     borderSide: BorderSide(),
                   ),
                 ),
@@ -141,7 +141,7 @@ class _LogInTeacherState extends State<LogInTeacher> {
                             height: 100,
                             alignment: Alignment.center,
                             child: TextFormField(
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide(),
                                 ),

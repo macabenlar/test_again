@@ -18,23 +18,24 @@ class _SignInState extends State<SignIn> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             
             const SizedBox(
-              height: 20,
+              height: 50,
             ),
             SizedBox(
-              height: 150,
-              width: 150,
+              height: 200,
+              width: 200,
               child: Image.asset(
                 "assets/images/logo.png",
                 fit: BoxFit.fill,
               ),
             ),
             const SizedBox(
-              height: 20,
+              height: 1.0,
             ),
             const Text(
               "Welcome Onboard!",
@@ -74,7 +75,8 @@ class _SignInState extends State<SignIn> {
                         ),
                       );
                     },
-                    child: const Text("Log In as a Teacher", style: TextStyle(color: Colors.white),
+                    child: const Text("Log In as a Teacher", style: TextStyle(color: Colors.white, fontSize: 18,
+                      fontWeight: FontWeight.bold,)
                   ),
                 ),
                 ),
@@ -122,7 +124,14 @@ class _SignInState extends State<SignIn> {
                         ),
                       );
                     },
-                    child: const Text("Log In as a Student", style: TextStyle(color: Colors.white),),
+                    child: const Text(
+                    "Log in as a Student",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   ),
                 ),
               ],
@@ -145,6 +154,10 @@ class _SignInState extends State<SignIn> {
                   },
                   child: const Text(
                     "Sign Up!",
+                     style: TextStyle(
+                    color: Color(0xFF15A323),
+                    fontWeight: FontWeight.bold,
+                  ),
                   ),
                 ),
               ],

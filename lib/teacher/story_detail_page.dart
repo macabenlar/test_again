@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:test_again/widgets/edit_delete_update_buttons.dart'; // Import the EditDeleteUpdateButtons widget
+import 'package:test_again/widgets/edit_delete_update_buttons.dart';
 
 class StoryDetailPage extends StatefulWidget {
   final String docId;
   final String title;
-  final String body;
+  final String content;
 
   const StoryDetailPage({
-    super.key,
+    Key? key,
     required this.docId,
     required this.title,
-    required this.body,
-  });
+    required this.content,
+  }) : super(key: key);
 
   @override
   _StoryDetailPageState createState() => _StoryDetailPageState();
@@ -20,70 +20,78 @@ class StoryDetailPage extends StatefulWidget {
 
 class _StoryDetailPageState extends State<StoryDetailPage> {
   late TextEditingController titleController;
-  late TextEditingController bodyController;
+  late TextEditingController contentController;
   bool isEditing = false;
 
   @override
   void initState() {
     super.initState();
     titleController = TextEditingController(text: widget.title);
-    bodyController = TextEditingController(text: widget.body);
+    contentController = TextEditingController(text: widget.content);
   }
 
   @override
   void dispose() {
     titleController.dispose();
-    bodyController.dispose();
+    contentController.dispose();
     super.dispose();
   }
 
   Future<void> updateStory() async {
     try {
-      if (widget.docId.isNotEmpty) { // Check if docId is not empty
-        DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('stories').doc(widget.docId).get();
-        if (snapshot.exists) {
-          print('Document exists, proceeding with update...');
-          await FirebaseFirestore.instance.collection('stories').doc(widget.docId).update({
-            'title': titleController.text,
-            'body': bodyController.text,
-          });
-          print('Update successful');
-          setState(() {
-            isEditing = false;
-          });
-          // ignore: use_build_context_synchronously
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Story updated successfully')),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Document does not exist')),
-          );
-        }
+      if (widget.docId.isNotEmpty) {
+        await FirebaseFirestore.instance.collection('Stories').doc(widget.docId).update({
+          'title': titleController.text,
+          'content': contentController.text,
+        });
+        setState(() {
+          isEditing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Story updated successfully')),
+        );
       } else {
         print('Document ID is empty');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Document ID is empty')),
+          const SnackBar(content: Text('Document ID is empty')),
         );
       }
     } catch (e) {
-      print('Firestore Error: $e');
+      print('Failed to update story: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update story: $e')),
       );
     }
   }
 
-  void deleteStory() {
-    // Implement delete logic here
+  Future<void> deleteStory() async {
+    try {
+      if (widget.docId.isNotEmpty) {
+        await FirebaseFirestore.instance.collection('Stories').doc(widget.docId).delete();
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Story deleted successfully')),
+        );
+      } else {
+        print('Document ID is empty');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Document ID is empty')),
+        );
+      }
+    } catch (e) {
+      print('Failed to delete story: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete story: $e')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Story'), // Empty title
-        centerTitle: true, // Center align the title in the AppBar
+        title: Text('Story Details'),
+        centerTitle: true,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -92,23 +100,24 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
           isEditing
               ? TextFormField(
                   controller: titleController,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 50),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
                   textAlign: TextAlign.center,
                 )
               : Text(
                   widget.title,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 50),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
                   textAlign: TextAlign.center,
                 ),
-          SizedBox(height: 100), // Adjust height as needed
+          SizedBox(height: 20),
           isEditing
               ? TextFormField(
-                  controller: bodyController,
+                  controller: contentController,
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   textAlign: TextAlign.center,
+                  maxLines: null,
                 )
               : Text(
-                  widget.body,
+                  widget.content,
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   textAlign: TextAlign.center,
                 ),
@@ -117,19 +126,15 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
             child: Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
-                padding: const EdgeInsets.all(55.0),
+                padding: const EdgeInsets.all(16.0),
                 child: EditDeleteUpdateButtons(
                   onEditPressed: () {
                     setState(() {
                       isEditing = true;
                     });
                   },
-                  onDeletePressed: () {
-                    // Implement delete logic here
-                  },
-                  onUpdatePressed: () {
-                    updateStory(); // Call the update function here
-                  },
+                  onDeletePressed: deleteStory,
+                  onUpdatePressed: updateStory,
                 ),
               ),
             ),

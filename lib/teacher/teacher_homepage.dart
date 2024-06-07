@@ -5,7 +5,9 @@ import 'package:test_again/teacher/assessment_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class TeacherHomePage extends StatefulWidget {
-  const TeacherHomePage({Key? key});
+  final String teacherId; // Add teacherId parameter
+
+  const TeacherHomePage({Key? key, required this.teacherId}) : super(key: key);
 
   @override
   State<TeacherHomePage> createState() => _TeacherHomePageState();
@@ -47,7 +49,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       onWillPop: () async {
         if (_backButtonCount == 0) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('logout?'),
+            content: Text('Press back again to log out'),
           ));
           setState(() {
             _backButtonCount++;
@@ -60,7 +62,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
+          title: const Text(
             'Home Page',
             style: TextStyle(
               color: Colors.black,
@@ -70,7 +72,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
           ),
           centerTitle: true,
         ),
-        drawer: const TeacherDrawer(),
+        drawer: TeacherDrawer(teacherId: widget.teacherId), // Pass teacherId here
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -79,7 +81,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => AssessmentPage()),
+                    MaterialPageRoute(builder: (context) => const AssessmentPage()),
                   );
                 },
                 child: Container(
@@ -87,12 +89,12 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                   height: 90,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    image: DecorationImage(
+                    image: const DecorationImage(
                       image: AssetImage('assets/images/Assessment.png'),
                       fit: BoxFit.cover,
                     ),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Text(
                       'Assessment',
                       style: TextStyle(
@@ -104,12 +106,12 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               GestureDetector(
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => StudentListPage()),
+                    MaterialPageRoute(builder: (context) => StudentListPage(teacherId: widget.teacherId)),
                   );
                 },
                 child: Container(
@@ -117,12 +119,12 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                   height: 90,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    image: DecorationImage(
+                    image: const DecorationImage(
                       image: AssetImage('assets/images/Student.png'),
                       fit: BoxFit.cover,
                     ),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Text(
                       'Student List',
                       style: TextStyle(

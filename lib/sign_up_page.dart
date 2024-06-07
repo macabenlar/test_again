@@ -13,15 +13,12 @@ class _SignUpState extends State<SignUp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.arrow_back_sharp,
-            ),
+          const SizedBox(
+            height: 50,
           ),
           SizedBox(
             height: 200,
@@ -31,31 +28,36 @@ class _SignUpState extends State<SignUp> {
               fit: BoxFit.fill,
             ),
           ),
+          const SizedBox(
+            height: 1.0,
+          ),
           const Text(
             "Welcome Onboard!",
             style: TextStyle(
               fontSize: 35,
               fontWeight: FontWeight.w700,
+              color: Color.fromARGB(255, 0, 0, 0),
             ),
+          ),
+          const SizedBox(
+            height: 30,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Image.asset("assets/images/Teacher.png"),
+              const SizedBox(width: 10),
               Container(
                 height: 50,
                 width: 250,
-                decoration: BoxDecoration(
-                  color: Colors.green[400],
-                  borderRadius: const BorderRadius.all(
+                decoration: const BoxDecoration(
+                  color: Color(0xFF15A323),
+                  borderRadius: BorderRadius.all(
                     Radius.circular(50),
                   ),
                 ),
                 child: TextButton(
-                  style: const ButtonStyle(
-                    iconSize: MaterialStatePropertyAll(20),
-                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -66,16 +68,27 @@ class _SignUpState extends State<SignUp> {
                       ),
                     );
                   },
-                  child: const Text("Sign Up as a Teacher"),
+                  child: const Text(
+                    "Sign Up as a Teacher",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
-          const Text(
-            "OR",
-            style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
+          const Align(
+            alignment: Alignment.center,
+            child: Text(
+              "OR",
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF15A323),
+              ),
             ),
           ),
           Row(
@@ -90,12 +103,13 @@ class _SignUpState extends State<SignUp> {
                   fit: BoxFit.fill,
                 ),
               ),
+              const SizedBox(width: 10),
               Container(
                 height: 50,
                 width: 250,
-                decoration: BoxDecoration(
-                  color: Colors.green[400],
-                  borderRadius: const BorderRadius.all(
+                decoration: const BoxDecoration(
+                  color: Color(0xFF15A323),
+                  borderRadius: BorderRadius.all(
                     Radius.circular(50),
                   ),
                 ),
@@ -110,7 +124,14 @@ class _SignUpState extends State<SignUp> {
                       ),
                     );
                   },
-                  child: const Text("Sign Up as a Student"),
+                  child: const Text(
+                    "Sign Up as a Student",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -125,6 +146,10 @@ class _SignUpState extends State<SignUp> {
                 },
                 child: const Text(
                   "Sign In!",
+                  style: TextStyle(
+                    color: Color(0xFF15A323),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],

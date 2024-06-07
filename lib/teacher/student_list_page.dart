@@ -1,170 +1,175 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:test_again/widgets/story_list_widget.dart';
-import 'package:test_again/teacher/story_detail_page.dart';
-import 'package:test_again/widgets/add_button.dart';
-import 'assessment_quizzes.dart';
+import 'package:test_again/models/student_model.dart';
+import 'package:test_again/teacher/student_detail_page.dart';
 
 class StudentListPage extends StatefulWidget {
-  const StudentListPage({Key? key}) : super(key: key);
+  final String teacherId;
+
+  const StudentListPage({Key? key, required this.teacherId}) : super(key: key);
 
   @override
   _StudentListPageState createState() => _StudentListPageState();
 }
 
 class _StudentListPageState extends State<StudentListPage> {
-  Color passagesColor = Colors.yellow;
-  Color quizzesColor = Colors.white;
-  TextEditingController titleController = TextEditingController();
-  TextEditingController bodyController = TextEditingController();
-  bool isAddingStory = false;
-
-  void addStory() {
-    FirebaseFirestore.instance.collection('stories').add({
-      'title': titleController.text,
-      'body': bodyController.text,
-    }).then((value) {
-      String docId = value.id;
-      titleController.clear();
-      bodyController.clear();
-      setState(() {
-        isAddingStory = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Added Story Successfully'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      navigateToStoryDetail(docId, titleController.text, bodyController.text);
-    }).catchError((error) {
-      print('Error adding story: $error');
-    });
-  }
-
-  void navigateToStoryDetail(String docId, String title, String body) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => StoryDetailPage(docId: docId, title: title, body: body),
-      ),
-    );
-  }
+  String _searchText = '';
+  String _selectedGrade = 'All';
+  String _selectedGender = 'All';
+  bool _isAscending = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Color(0xFF15A323),
-        elevation: 0,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () {},
-              child: Text(
-                '', // Clear text
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  color: passagesColor,
-                ),
-              ),
-            ),
-            Container(
-              width: 2,
-              height: 20,
-              margin: EdgeInsets.symmetric(horizontal: 10),
-              color: Colors.white,
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AssessmentQuizzesPage(),
-                  ),
-                );
-              },
-              child: Text(
-                '', // Clear text
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  color: quizzesColor,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            top: 0,
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 100.0),
-                child: StoryListWidget(
-                  onTapStory: (title, body) {
-                  navigateToStoryDetail('', title, body);
-                  },
-
-                ),
-              ),
-            ),
+        title: const Text(
+          'Student List',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
-          Positioned(
-            top: 16.0,
-            left: 16.0,
-            child: CustomAddButton(
-              onPressed: () {
+        ),
+        backgroundColor: const Color(0xFF15A323),
+        centerTitle: true,
+        automaticallyImplyLeading: false, // Remove the back button icon
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              onChanged: (value) {
                 setState(() {
-                  isAddingStory = true;
+                  _searchText = value;
                 });
               },
-              titleController: titleController,
-              bodyController: bodyController,
-            ),
-          ),
-          if (isAddingStory)
-            Positioned(
-              bottom: 16.0,
-              left: 16.0,
-              right: 16.0,
-              child: Card(
-                elevation: 4.0,
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextField(
-                        controller: titleController,
-                        decoration: InputDecoration(
-                          hintText: 'Enter story title',
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      TextField(
-                        controller: bodyController,
-                        decoration: InputDecoration(
-                          hintText: 'Enter story body',
-                        ),
-                        maxLines: 4,
-                      ),
-                      SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: addStory,
-                        child: Text('Add'),
-                      ),
-                    ],
-                  ),
-                ),
+              decoration: const InputDecoration(
+                labelText: 'Search',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
               ),
             ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              children: [
+                DropdownButton<String>(
+                  value: _selectedGrade,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedGrade = value!;
+                    });
+                  },
+                  items: <String>['All', '1', '2', '3', '4', '5', '6', '7']
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text('Grade $value'),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(width: 16),
+                DropdownButton<String>(
+                  value: _selectedGender,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedGender = value!;
+                    });
+                  },
+                  items: <String>['All', 'male', 'female']
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: Icon(
+                    _isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isAscending = !_isAscending;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('Students').snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Error loading students.'));
+                }
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('No students found.'));
+                }
+
+                var students = snapshot.data!.docs.map((doc) {
+                  return Student.fromFirestore(doc.data() as Map<String, dynamic>);
+                }).toList();
+
+                if (_searchText.isNotEmpty) {
+                  students = students.where((student) {
+                    final fullName = '${student.firstName} ${student.lastName}'.toLowerCase();
+                    return fullName.contains(_searchText.toLowerCase());
+                  }).toList();
+                }
+
+                if (_selectedGrade != 'All') {
+                  students = students.where((student) {
+                    return student.gradeLevel == _selectedGrade;
+                  }).toList();
+                }
+
+                if (_selectedGender != 'All') {
+                  students = students.where((student) {
+                    return student.gender == _selectedGender;
+                  }).toList();
+                }
+
+                students.sort((a, b) {
+                  final comparison = a.firstName.compareTo(b.firstName);
+                  return _isAscending ? comparison : -comparison;
+                });
+
+                return ListView.builder(
+                  itemCount: students.length,
+                  itemBuilder: (context, index) {
+                    final student = students[index];
+                    return ListTile(
+                      title: Text('${student.firstName} ${student.lastName}'),
+                      subtitle: Text('Grade: ${student.gradeLevel}\nGender: ${student.gender}'),
+                      leading: CircleAvatar(
+                        backgroundImage: student.profilePictureUrl.isNotEmpty
+                            ? NetworkImage(student.profilePictureUrl)
+                            : const AssetImage('assets/images/default_profile.png') as ImageProvider,
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => StudentDetailPage(student: student),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
         ],
       ),
     );

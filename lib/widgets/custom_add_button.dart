@@ -2,15 +2,8 @@ import 'package:flutter/material.dart';
 
 class CustomAddButton extends StatelessWidget {
   final VoidCallback onPressed;
-  final TextEditingController titleController;
-  final TextEditingController contentController;
 
-  const CustomAddButton({
-    Key? key,
-    required this.onPressed,
-    required this.titleController,
-    required this.contentController,
-  }) : super(key: key);
+  const CustomAddButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {

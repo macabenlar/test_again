@@ -16,6 +16,7 @@ class _SignUpStudentState extends State<SignUpStudent> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _gradeLevelController = TextEditingController();
+  String? _selectedGender;
   bool _isButtonDisabled = true;
   String? _errorMessage;
   bool _showPassword = false;
@@ -44,13 +45,14 @@ class _SignUpStudentState extends State<SignUpStudent> {
   }
 
   void _validateInputs() {
-    // Update your validation logic to include firstname, lastname, and grade level
+    // Update your validation logic to include firstname, lastname, grade level, and gender
     bool isFieldsNotEmpty = _emailController.text.isNotEmpty &&
                             _passwordController.text.isNotEmpty &&
                             _confirmPasswordController.text.isNotEmpty &&
                             _firstNameController.text.isNotEmpty &&
                             _lastNameController.text.isNotEmpty &&
                             _gradeLevelController.text.isNotEmpty &&
+                            _selectedGender != null &&
                             _passwordController.text == _confirmPasswordController.text &&
                             _passwordController.text.length >= 6;
 
@@ -88,6 +90,7 @@ class _SignUpStudentState extends State<SignUpStudent> {
         'firstname': _firstNameController.text,
         'lastname': _lastNameController.text,
         'gradeLevel': _gradeLevelController.text,
+        'gender': _selectedGender,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
@@ -113,116 +116,130 @@ class _SignUpStudentState extends State<SignUpStudent> {
     }
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    body: Padding(
-      padding: const EdgeInsets.all(15.0),
-      child: Form(
-        child: SingleChildScrollView( // Changed to SingleChildScrollView to prevent overflow when keyboard appears
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(height: 100), // Increased space at the top to push everything lower
-              const Text(
-                "Student Registration Page",
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w600,
-                ),
-             
-             ),
-            // TextFields for first name, last name, and grade level
-              TextFormField(
-                controller: _firstNameController,
-                decoration: const InputDecoration(
-                  labelText: "First Name",
-                  hintText: "Enter Your First Name",
-                ),
-              ),
-              TextFormField(
-                controller: _lastNameController,
-                decoration: const InputDecoration(
-                  labelText: "Last Name",
-                  hintText: "Enter Your Last Name",
-                ),
-              ),
-              TextFormField(
-                controller: _gradeLevelController,
-                decoration: const InputDecoration(
-                  labelText: "Grade Level",
-                  hintText: "Enter Your Grade Level",
-                ),
-              ),
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: "Email Address",
-                  hintText: "Enter Your Email Address",
-                ),
-              ),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: !_showPassword,
-                decoration: InputDecoration(
-                  labelText: "Password",
-                  hintText: "Enter Your Password",
-                  suffixIcon: IconButton(
-                    icon: _showPassword ? Icon(Icons.visibility) : Icon(Icons.visibility_off),
-                    onPressed: _togglePasswordVisibility,
-                  ),
-                ),
-              ),
-              TextFormField(
-                controller: _confirmPasswordController,
-                obscureText: !_showConfirmPassword,
-                decoration: InputDecoration(
-                  labelText: "Confirm Password",
-                  hintText: "Confirm Your Password",
-                  suffixIcon: IconButton(
-                    icon: _showConfirmPassword ? Icon(Icons.visibility) : Icon(Icons.visibility_off),
-                    onPressed: _toggleConfirmPasswordVisibility,
-                  ),
-                ),
-              ),
-              
-              if (_errorMessage != null)
-                Text(
-                  _errorMessage!,
-                  style: TextStyle(color: Colors.red),
-                ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                ),
-                onPressed: _isButtonDisabled ? null : signUp,
-                child: const Text(
-                  "Submit",
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Form(
+          child: SingleChildScrollView( // Changed to SingleChildScrollView to prevent overflow when keyboard appears
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(height: 100), // Increased space at the top to push everything lower
+                const Text(
+                  "Student Registration Page",
                   style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    fontSize: 30,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Already have an account?"),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text("Sign in Now!"),
+                // TextFields for first name, last name, and grade level
+                TextFormField(
+                  controller: _firstNameController,
+                  decoration: const InputDecoration(
+                    labelText: "First Name",
+                    hintText: "Enter Your First Name",
                   ),
-                ],
-              ),
-            ],
+                ),
+                TextFormField(
+                  controller: _lastNameController,
+                  decoration: const InputDecoration(
+                    labelText: "Last Name",
+                    hintText: "Enter Your Last Name",
+                  ),
+                ),
+                TextFormField(
+                  controller: _gradeLevelController,
+                  decoration: const InputDecoration(
+                    labelText: "Grade Level",
+                    hintText: "Enter Your Grade Level",
+                  ),
+                ),
+                DropdownButtonFormField<String>(
+                  value: _selectedGender,
+                  hint: const Text('Select Gender'),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedGender = value;
+                      _validateInputs(); // Validate inputs when gender is selected
+                    });
+                  },
+                  items: ['male', 'female'].map((gender) {
+                    return DropdownMenuItem<String>(
+                      value: gender,
+                      child: Text(gender),
+                    );
+                  }).toList(),
+                ),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: "Email Address",
+                    hintText: "Enter Your Email Address",
+                  ),
+                ),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: !_showPassword,
+                  decoration: InputDecoration(
+                    labelText: "Password",
+                    hintText: "Enter Your Password",
+                    suffixIcon: IconButton(
+                      icon: _showPassword ? Icon(Icons.visibility) : Icon(Icons.visibility_off),
+                      onPressed: _togglePasswordVisibility,
+                    ),
+                  ),
+                ),
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: !_showConfirmPassword,
+                  decoration: InputDecoration(
+                    labelText: "Confirm Password",
+                    hintText: "Confirm Your Password",
+                    suffixIcon: IconButton(
+                      icon: _showConfirmPassword ? Icon(Icons.visibility) : Icon(Icons.visibility_off),
+                      onPressed: _toggleConfirmPasswordVisibility,
+                    ),
+                  ),
+                ),
+                if (_errorMessage != null)
+                  Text(
+                    _errorMessage!,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
+                  onPressed: _isButtonDisabled ? null : signUp,
+                  child: const Text(
+                    "Submit",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Already have an account?"),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text("Sign in Now!"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

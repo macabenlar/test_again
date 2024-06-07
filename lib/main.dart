@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:test_again/Screens/log_in_page.dart';
+import 'package:test_again/student/student_home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,8 +46,8 @@ class MyHomePage extends StatelessWidget {
               ),
               Image.asset(
                 "assets/images/logo.png",
-                height: 150,
-                width: 150,
+                height: 300,
+                width: 400,
                 fit: BoxFit.fill,
               ),
               Column(

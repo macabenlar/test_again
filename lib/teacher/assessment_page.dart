@@ -4,6 +4,7 @@ import 'package:test_again/widgets/story_list_widget.dart';
 import 'package:test_again/teacher/story_detail_page.dart';
 import 'package:test_again/widgets/add_button.dart';
 import 'assessment_quizzes.dart';
+import  'package:test_again/widgets/assign_story_quiz_page.dart'; // Import the AssignStoryQuizPage
 
 class AssessmentPage extends StatefulWidget {
   const AssessmentPage({Key? key}) : super(key: key);
@@ -16,17 +17,15 @@ class _AssessmentPageState extends State<AssessmentPage> {
   Color passagesColor = Colors.yellow;
   Color quizzesColor = Colors.white;
   TextEditingController titleController = TextEditingController();
-  TextEditingController bodyController = TextEditingController();
+  TextEditingController contentController = TextEditingController();
   bool isAddingStory = false;
 
   void addStory() {
-    FirebaseFirestore.instance.collection('stories').add({
+    FirebaseFirestore.instance.collection('Stories').add({
       'title': titleController.text,
-      'body': bodyController.text,
+      'content': contentController.text,
     }).then((value) {
       String docId = value.id;
-      titleController.clear();
-      bodyController.clear();
       setState(() {
         isAddingStory = false;
       });
@@ -36,17 +35,19 @@ class _AssessmentPageState extends State<AssessmentPage> {
           duration: Duration(seconds: 2),
         ),
       );
-      navigateToStoryDetail(docId, titleController.text, bodyController.text);
+      navigateToStoryDetail(docId, titleController.text, contentController.text);
+      titleController.clear();
+      contentController.clear();
     }).catchError((error) {
       print('Error adding story: $error');
     });
   }
 
-  void navigateToStoryDetail(String docId, String title, String body) {
+  void navigateToStoryDetail(String docId, String title, String content) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => StoryDetailPage(docId: docId, title: title, body: body),
+        builder: (context) => StoryDetailPage(docId: docId, title: title, content: content),
       ),
     );
   }
@@ -99,73 +100,91 @@ class _AssessmentPageState extends State<AssessmentPage> {
           ],
         ),
       ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            top: 0,
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 100.0),
-                child: StoryListWidget(
-                  onTapStory: (title, body) {
-                  navigateToStoryDetail('', title, body);
-                  },
-
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 16.0,
-            left: 16.0,
-            child: CustomAddButton(
-              onPressed: () {
-                setState(() {
-                  isAddingStory = true;
-                });
-              },
-              titleController: titleController,
-              bodyController: bodyController,
-            ),
-          ),
-          if (isAddingStory)
-            Positioned(
-              bottom: 16.0,
-              left: 16.0,
-              right: 16.0,
-              child: Card(
-                elevation: 4.0,
+      body: Container(
+        color: Colors.white,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              top: 0,
+              child: Center(
                 child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextField(
-                        controller: titleController,
-                        decoration: InputDecoration(
-                          hintText: 'Enter story title',
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      TextField(
-                        controller: bodyController,
-                        decoration: InputDecoration(
-                          hintText: 'Enter story body',
-                        ),
-                        maxLines: 4,
-                      ),
-                      SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: addStory,
-                        child: Text('Add'),
-                      ),
-                    ],
+                  padding: const EdgeInsets.only(top: 100.0),
+                  child: StoryListWidget(
+                    onTapStory: (docId, title, content) {
+                      navigateToStoryDetail(docId, title, content);
+                    },
                   ),
                 ),
               ),
             ),
-        ],
+            Positioned(
+              top: 16.0,
+              left: 16.0,
+              child: CustomAddButton(
+                onPressed: () {
+                  setState(() {
+                    isAddingStory = true;
+                  });
+                },
+                titleController: titleController,
+                contentController: contentController,
+              ),
+            ),
+            if (isAddingStory)
+              Positioned(
+                bottom: 16.0,
+                left: 16.0,
+                right: 16.0,
+                child: Card(
+                  elevation: 4.0,
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          controller: titleController,
+                          decoration: InputDecoration(
+                            hintText: 'Enter story title',
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        TextField(
+                          controller: contentController,
+                          decoration: InputDecoration(
+                            hintText: 'Enter story content',
+                          ),
+                          maxLines: 4,
+                        ),
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: addStory,
+                          child: Text('Add'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            Positioned(
+              bottom: 16.0,
+              right: 16.0,
+              child: FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AssignStoryQuizPage(),
+                    ),
+                  );
+                },
+                child: Icon(Icons.assignment_ind),
+                backgroundColor: Colors.green,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

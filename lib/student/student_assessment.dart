@@ -1,98 +1,129 @@
 import 'package:flutter/material.dart';
-import 'package:test_again/student/student_drawer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constant.dart';
-import '../widgets/question_widget.dart';
-import '../widgets/next_button.dart';
-import '../models/question_model.dart';
-import '../widgets/option_card.dart';
+import 'story_detail_and_quiz_page.dart';
 
 class StudentAssessment extends StatefulWidget {
- const StudentAssessment({super.key});
+  final String studentId;
 
- @override
- State<StudentAssessment> createState() => _StudentAssessmentState();
+  const StudentAssessment({Key? key, required this.studentId}) : super(key: key);
+
+  @override
+  State<StudentAssessment> createState() => _StudentAssessmentState();
 }
 
 class _StudentAssessmentState extends State<StudentAssessment> {
- final List<Question> _questions = [
-    Question(
-      id: '10',
-      title: 'What is 2 + 2?',
-      options: {'5': false, '30': false, '4': true, '10': false},
-    ),
-    Question(
-      id: '11',
-      title: 'What is 6 + 2?',
-      options: {'5': false, '30': false, '4': false, '8': true},
-    ),
- ];
- 
- int index = 0;
- // boolean value
- bool isPressed = false;
-// next question function
- void nextQuestion() {
-    if (index < _questions.length - 1) {
+  List<DocumentSnapshot> assignedItems = [];
+  bool isLoading = true;
 
-      if(isPressed){
-      setState(() {
-        index++;
-        isPressed = false;
-      });
-      }else{
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text('Please select any option'), behavior: 
-          SnackBarBehavior.floating, margin: EdgeInsets.symmetric(vertical:20.0),)
-        );
+  @override
+  void initState() {
+    super.initState();
+    loadAssignedItems();
+  }
+
+  Future<void> loadAssignedItems() async {
+    try {
+      var snapshot = await FirebaseFirestore.instance
+          .collection('AssignedQuizzes')
+          .where('studentId', isEqualTo: widget.studentId)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        print("No assigned quizzes found for the student.");
+      } else {
+        print("Assigned quizzes found: ${snapshot.docs.length}");
       }
+
+      setState(() {
+        assignedItems = snapshot.docs;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error fetching assigned items: $e");
+      setState(() {
+        isLoading = false;
+      });
     }
- }
+  }
 
- // function for change color
- void changeColor() {
-   setState(() {
-     isPressed = true;
-   });
- }
-
- @override
- Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: background,
-      appBar: AppBar(
- title: const Text('Quiz Passage', style: TextStyle(color: neutralColor)),
- backgroundColor: background,
- shadowColor: const Color.fromARGB(255, 0, 0, 0),
- leading: null, // This line removes the back icon
- automaticallyImplyLeading: false, // This line ensures the leading widget is not shown automatically
-),
-      body: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-        child: Column(
-          children: [
-            QuestionWidget(
-              indexAction: index,
-              question: _questions[index].title,
-              totalQuestions: _questions.length,
-            ),
-            const Divider(color: neutralColor),
-            
-              // add some space 
-            const SizedBox(height: 25.0),
-            ..._questions[index].options.entries.map((entry) {
-              return OptionCard(
-                option: entry.key,
-                color: isPressed ? (entry.value ? Colors.green : Colors.red) : Colors.white,
-                onTap: changeColor,
-              );
-            }).toList(),
-           
-          ],
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: const Text('Loading...', style: TextStyle(color: neutralColor)),
+          centerTitle: true,
+          automaticallyImplyLeading: false, // Remove the back button
+          backgroundColor: Colors.green,
+          shadowColor: const Color.fromARGB(255, 0, 0, 0),
         ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('ASSIGNED PASSAGES', style: TextStyle(color: neutralColor)),
+        centerTitle: true,
+        automaticallyImplyLeading: false, // Remove the back button
+        backgroundColor: Colors.green,
+        shadowColor: const Color.fromARGB(255, 0, 0, 0),
       ),
-      floatingActionButton: NextButton(nextQuestion: nextQuestion),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      body: ListView.builder(
+        padding: const EdgeInsets.only(top: 20.0), // Add space at the top
+        itemCount: assignedItems.length,
+        itemBuilder: (context, index) {
+          var item = assignedItems[index];
+          var storyId = item['storyId'];
+          var quizId = item['quizId'];
+
+          return FutureBuilder<DocumentSnapshot>(
+            future: FirebaseFirestore.instance.collection('Stories').doc(storyId).get(),
+            builder: (context, storySnapshot) {
+              if (!storySnapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              var storyData = storySnapshot.data;
+              var storyTitle = storyData?['title'] ?? 'No Title';
+
+              return Card(
+                color: Colors.green, // Set the card color to green
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0), // More rounded corners
+                ),
+                margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                child: ListTile(
+                  title: Text(
+                    storyTitle,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  trailing: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => StoryDetailAndQuizPage(
+                            storyId: storyId,
+                            quizId: quizId,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('Read & Quiz'),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.green, backgroundColor: Colors.white, // Text color
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
- }
+  }
 }

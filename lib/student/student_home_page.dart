@@ -1,58 +1,62 @@
 import 'package:flutter/material.dart';
-import 'package:test_again/student/student_drawer.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'student_drawer.dart';
 import '../constant.dart';
-import 'student_assessment.dart'; // Import the student_assessment.dart file
+import 'student_assessment.dart';
 
 class StudentHomePage extends StatefulWidget {
- const StudentHomePage({Key? key}) : super(key: key); // Convert 'key' to a super parameter
+  const StudentHomePage({Key? key}) : super(key: key);
 
- @override
- State<StudentHomePage> createState() => _StudentHomePageState();
+  @override
+  State<StudentHomePage> createState() => _StudentHomePageState();
 }
 
 class _StudentHomePageState extends State<StudentHomePage> {
- @override
- Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
+    final User? user = FirebaseAuth.instance.currentUser;
+    final String studentId = user?.uid ?? '';
+
     return Scaffold(
       backgroundColor: neutralColor,
       appBar: AppBar(
         title: const Text('', style: TextStyle(color: neutralColor)),
         backgroundColor: neutralColor,
-        shadowColor: const Color.fromARGB(255, 0, 0, 0), // Use 'const' with the constructor
+        shadowColor: const Color.fromARGB(255, 0, 0, 0),
       ),
-      drawer: const StudentDrawer(),
+      drawer: StudentDrawer(studentId: studentId),
       body: Center(
         child: GestureDetector(
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const StudentAssessment()),
+              MaterialPageRoute(builder: (context) => StudentAssessment(studentId: studentId)),
             );
           },
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(10), // Make the corners rounded
+            borderRadius: BorderRadius.circular(10),
             child: Stack(
               alignment: Alignment.center,
-                children: [
-                  Image.asset(
+              children: [
+                Image.asset(
                   'assets/images/Assessment.png',
-                  width: 200, // Adjust the width as needed
-                  height: 100, // Adjust the height as needed to maintain the aspect ratio of the image
-                  fit: BoxFit.cover, // Use BoxFit.cover to make the image fill the container
-                  ),
-                  Text(
+                  width: 200,
+                  height: 100,
+                  fit: BoxFit.cover,
+                ),
+                const Text(
                   'Assessment',
                   style: TextStyle(
-                      color: Colors.white, // Adjust the text color as needed
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                  ),
-                ],
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
- }
+  }
 }

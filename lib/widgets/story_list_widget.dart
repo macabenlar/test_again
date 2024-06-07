@@ -2,64 +2,53 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class StoryListWidget extends StatelessWidget {
-  final Function(String title, String body) onTapStory; // Define onTapStory here
+  final Function(String, String, String) onTapStory;
 
-  const StoryListWidget({super.key, required this.onTapStory});
+  const StoryListWidget({Key? key, required this.onTapStory}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('stories').snapshots(),
-      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        }
-
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        }
-
-        return Container(
-          margin: const EdgeInsets.only(top: 20.0), // Adjust the top margin as needed
-          child: ListView.builder(
-            itemCount: snapshot.data!.docs.length,
+    return Container(
+      color: Colors.white, // Set a consistent background color
+      child: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('Stories').snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return CircularProgressIndicator();
+          }
+          final stories = snapshot.data!.docs;
+          return ListView.builder(
+            itemCount: stories.length,
             itemBuilder: (context, index) {
-              var title = snapshot.data!.docs[index]['title'];
-              var body = snapshot.data!.docs[index]['body']; // Add body variable
-
+              final story = stories[index];
+              final docId = story.id; // Get the document ID
+              final title = story['title'];
+              final content = story['content'];
               return GestureDetector(
-                onTap: () {
-                  onTapStory(title, body); // Call onTapStory function
-                },
+                onTap: () => onTapStory(docId, title, content),
                 child: Container(
-                  height: 100.0, // Adjust height as needed
-                  margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Adjust margins as needed
-                  child: Card(
-                    color: const Color(0xFF15A323), // Green color
-                    elevation: 4.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(35.0),
-                    ),
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0), // Padding within the Card
-                        child: Text(
-                          title ?? 'No Title',
-                          style: const TextStyle(
-                            fontSize: 20.0,
-                            color: Colors.white, // White text color
-                            fontWeight: FontWeight.bold, // Bold text
-                          ),
-                        ),
+                  margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  padding: EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  child: Center(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                 ),
               );
             },
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
