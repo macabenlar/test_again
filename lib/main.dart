@@ -54,16 +54,16 @@ class MyHomePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Welcome to EduAssess App!",
+                    "Welcome to CISC KIDS APP!!",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 25.0,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
                   SizedBox(height: 10),
                   Text(
-                    "Revolutionizing Learning Through Assessment!",
+                    " Mobile Reading Comprehension ",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
@@ -71,11 +71,13 @@ class MyHomePage extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 width: 280,
-                child: Text(
-                  "At EduAssess, we believe in the transformative power of education. Our mission is to empower learners and educators alike by providing innovative assessment solutions that foster meaningful learning experiences. We understand that assessment is not just about testing; it's about understanding, growth, and continuous improvement.",
-                  textAlign: TextAlign.justify,
+                child: Center(
+                  child: Text(
+                    "we believe in the trans-formative power of education. Our mission is to empower learners and educators alike by providing innovative assessment solutions that foster meaningful learning experiences. We understand that assessment is not just about testing; it's about understanding, growth, and continuous improvement",
+                    textAlign: TextAlign.justify,
+                  ),
                 ),
               ),
               Container(
