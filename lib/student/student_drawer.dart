@@ -39,8 +39,8 @@ class _StudentDrawerState extends State<StudentDrawer> {
       if (studentDoc.exists) {
         print('Student document exists');
         setState(() {
-          firstName = studentDoc['firstname'];
-          lastName = studentDoc['lastname'];
+          firstName = studentDoc['firstName'];
+          lastName = studentDoc['lastName'];
           profilePictureUrl = studentDoc['profilePictureUrl'] ?? '';
           isLoading = false;
         });
@@ -128,9 +128,9 @@ class _StudentDrawerState extends State<StudentDrawer> {
                                         color: Colors.black.withOpacity(0.5),
                                         shape: BoxShape.circle,
                                       ),
-                                      child: Column(
+                                      child: const Column(
                                         mainAxisAlignment: MainAxisAlignment.center,
-                                        children: const [
+                                        children: [
                                           Icon(Icons.camera_alt, color: Colors.white, size: 30),
                                         ],
                                       ),

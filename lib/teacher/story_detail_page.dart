@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:test_again/widgets/background.dart'; // Import the Background widget
 import 'package:test_again/widgets/edit_delete_update_buttons.dart';
 
 class StoryDetailPage extends StatefulWidget {
@@ -8,11 +9,11 @@ class StoryDetailPage extends StatefulWidget {
   final String content;
 
   const StoryDetailPage({
-    Key? key,
+    super.key,
     required this.docId,
     required this.title,
     required this.content,
-  }) : super(key: key);
+  });
 
   @override
   _StoryDetailPageState createState() => _StoryDetailPageState();
@@ -90,56 +91,58 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Story Details'),
+        title: const Text('Story Details'),
         centerTitle: true,
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(height: 20),
-          isEditing
-              ? TextFormField(
-                  controller: titleController,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
-                  textAlign: TextAlign.center,
-                )
-              : Text(
-                  widget.title,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
-                  textAlign: TextAlign.center,
-                ),
-          SizedBox(height: 20),
-          isEditing
-              ? TextFormField(
-                  controller: contentController,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  textAlign: TextAlign.center,
-                  maxLines: null,
-                )
-              : Text(
-                  widget.content,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  textAlign: TextAlign.center,
-                ),
-          SizedBox(height: 32),
-          Expanded(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: EditDeleteUpdateButtons(
-                  onEditPressed: () {
-                    setState(() {
-                      isEditing = true;
-                    });
-                  },
-                  onDeletePressed: deleteStory,
-                  onUpdatePressed: updateStory,
+      body: Background( // Wrap the entire body with the Background widget
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 20),
+            isEditing
+                ? TextFormField(
+                    controller: titleController,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
+                    textAlign: TextAlign.center,
+                  )
+                : Text(
+                    widget.title,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
+                    textAlign: TextAlign.center,
+                  ),
+            const SizedBox(height: 20),
+            isEditing
+                ? TextFormField(
+                    controller: contentController,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.center,
+                    maxLines: null,
+                  )
+                : Text(
+                    widget.content,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w100),
+                    textAlign: TextAlign.center,
+                  ),
+            const SizedBox(height: 32),
+            Expanded(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: EditDeleteUpdateButtons(
+                    onEditPressed: () {
+                      setState(() {
+                        isEditing = true;
+                      });
+                    },
+                    onDeletePressed: deleteStory,
+                    onUpdatePressed: updateStory,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

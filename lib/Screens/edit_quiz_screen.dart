@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:test_again/widgets/background.dart'; // Import the Background widget
 
 class EditQuizScreen extends StatefulWidget {
   final String quizId;
 
-  const EditQuizScreen({Key? key, required this.quizId}) : super(key: key);
+  const EditQuizScreen({super.key, required this.quizId});
 
   @override
   _EditQuizScreenState createState() => _EditQuizScreenState();
@@ -46,7 +47,7 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
           _correctAnswerControllers.add(correctAnswerController);
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Quiz not found')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Quiz not found')));
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load quiz: $e')));
@@ -105,9 +106,9 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Edit Quiz'),
+          title: const Text('Edit Quiz'),
         ),
-        body: Center(
+        body: const Center(
           child: CircularProgressIndicator(),
         ),
       );
@@ -115,57 +116,59 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Quiz'),
+        title: const Text('Edit Quiz'),
         actions: [
           IconButton(
-            icon: Icon(Icons.delete),
+            icon: const Icon(Icons.delete),
             onPressed: _deleteQuiz,
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _quizTitleController,
-                decoration: InputDecoration(labelText: 'Quiz Title'),
-              ),
-              ..._questionControllers.asMap().entries.map((entry) {
-                final index = entry.key;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextFormField(
-                      controller: entry.value,
-                      decoration: InputDecoration(labelText: 'Question ${index + 1}'),
-                    ),
-                    ..._optionControllers[index].asMap().entries.map((optEntry) {
-                      final optIndex = optEntry.key;
-                      return TextFormField(
-                        controller: optEntry.value,
-                        decoration: InputDecoration(labelText: 'Option ${['A', 'B', 'C', 'D'][optIndex]}'),
-                      );
-                    }).toList(),
-                    TextFormField(
-                      controller: _correctAnswerControllers[index],
-                      decoration: InputDecoration(labelText: 'Correct Answer'),
-                    ),
-                    SizedBox(height: 20),
-                  ],
-                );
-              }).toList(),
-              ElevatedButton(
-                onPressed: _addQuestion,
-                child: Text('Add Question'),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _saveQuiz,
-                child: Text('Save Changes'),
-              ),
-            ],
+      body: Background( // Wrap the entire body with the Background widget
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _quizTitleController,
+                  decoration: const InputDecoration(labelText: 'Quiz Title'),
+                ),
+                ..._questionControllers.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: entry.value,
+                        decoration: InputDecoration(labelText: 'Question ${index + 1}'),
+                      ),
+                      ..._optionControllers[index].asMap().entries.map((optEntry) {
+                        final optIndex = optEntry.key;
+                        return TextFormField(
+                          controller: optEntry.value,
+                          decoration: InputDecoration(labelText: 'Option ${['A', 'B', 'C', 'D'][optIndex]}'),
+                        );
+                      }),
+                      TextFormField(
+                        controller: _correctAnswerControllers[index],
+                        decoration: const InputDecoration(labelText: 'Correct Answer'),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  );
+                }),
+                ElevatedButton(
+                  onPressed: _addQuestion,
+                  child: const Text('Add Question'),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _saveQuiz,
+                  child: const Text('Save Changes'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

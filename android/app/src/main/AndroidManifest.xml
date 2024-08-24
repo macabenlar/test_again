@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="CISCKIDS: MOBILE READING COMPREHENSION"
+        android:label="CISCKIDS: READING COMPREHENSION"
         android:name=".MainApplication"
         android:allowBackup="true"
         android:theme="@style/LaunchTheme"

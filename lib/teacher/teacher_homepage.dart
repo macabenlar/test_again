@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:test_again/teacher/student_list_page.dart';
 import 'package:test_again/teacher/teacher_drawer.dart';
 import 'package:test_again/teacher/assessment_page.dart';
+import 'package:test_again/widgets/background.dart'; // Import the Background widget
 import 'package:firebase_auth/firebase_auth.dart';
 
 class TeacherHomePage extends StatefulWidget {
   final String teacherId; // Add teacherId parameter
 
-  const TeacherHomePage({Key? key, required this.teacherId}) : super(key: key);
+  const TeacherHomePage({super.key, required this.teacherId});
 
   @override
   State<TeacherHomePage> createState() => _TeacherHomePageState();
@@ -60,83 +61,85 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
           return false; // Prevent back navigation
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'Home Page',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+      child: Background(
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text(
+              'Home Page',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
+            centerTitle: true,
           ),
-          centerTitle: true,
-        ),
-        drawer: TeacherDrawer(teacherId: widget.teacherId), // Pass teacherId here
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AssessmentPage()),
-                  );
-                },
-                child: Container(
-                  width: 180,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    image: const DecorationImage(
-                      image: AssetImage('assets/images/Assessment.png'),
-                      fit: BoxFit.cover,
+          drawer: TeacherDrawer(teacherId: widget.teacherId), // Pass teacherId here
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AssessmentPage()),
+                    );
+                  },
+                  child: Container(
+                    width: 180,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      image: const DecorationImage(
+                        image: AssetImage('assets/images/Assessment.png'),
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Assessment',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    child: const Center(
+                      child: Text(
+                        'Assessment',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => StudentListPage(teacherId: widget.teacherId)),
-                  );
-                },
-                child: Container(
-                  width: 180,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    image: const DecorationImage(
-                      image: AssetImage('assets/images/Student.png'),
-                      fit: BoxFit.cover,
+                const SizedBox(height: 20),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => StudentListPage(teacherId: widget.teacherId)),
+                    );
+                  },
+                  child: Container(
+                    width: 180,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      image: const DecorationImage(
+                        image: AssetImage('assets/images/Student.png'),
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Student List',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    child: const Center(
+                      child: Text(
+                        'Student List',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

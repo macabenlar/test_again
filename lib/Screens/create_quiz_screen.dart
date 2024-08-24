@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:test_again/widgets/background.dart'; // Import the Background widget
 
 class CreateQuizScreen extends StatefulWidget {
   final String storyId;
 
-  const CreateQuizScreen({Key? key, required this.storyId}) : super(key: key);
+  const CreateQuizScreen({super.key, required this.storyId});
 
   @override
   _CreateQuizScreenState createState() => _CreateQuizScreenState();
@@ -61,49 +62,51 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
       appBar: AppBar(
         title: const Text('Create Quiz'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _quizTitleController,
-                decoration: const InputDecoration(labelText: 'Quiz Title'),
-              ),
-              ..._questionControllers.asMap().entries.map((entry) {
-                final index = entry.key;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextFormField(
-                      controller: entry.value,
-                      decoration: InputDecoration(labelText: 'Question ${index + 1}'),
-                    ),
-                    ..._optionControllers[index].asMap().entries.map((optEntry) {
-                      final optIndex = optEntry.key;
-                      return TextFormField(
-                        controller: optEntry.value,
-                        decoration: InputDecoration(labelText: 'Option ${['A', 'B', 'C', 'D'][optIndex]}'),
-                      );
-                    }).toList(),
-                    TextFormField(
-                      controller: _correctAnswerControllers[index],
-                      decoration: const InputDecoration(labelText: 'Correct Answer'),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                );
-              }).toList(),
-              ElevatedButton(
-                onPressed: _addQuestion,
-                child: const Text('Add Question'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _saveQuiz,
-                child: const Text('Save Quiz'),
-              ),
-            ],
+      body: Background(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _quizTitleController,
+                  decoration: const InputDecoration(labelText: 'Quiz Title'),
+                ),
+                ..._questionControllers.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: entry.value,
+                        decoration: InputDecoration(labelText: 'Question ${index + 1}'),
+                      ),
+                      ..._optionControllers[index].asMap().entries.map((optEntry) {
+                        final optIndex = optEntry.key;
+                        return TextFormField(
+                          controller: optEntry.value,
+                          decoration: InputDecoration(labelText: 'Option ${['A', 'B', 'C', 'D'][optIndex]}'),
+                        );
+                      }),
+                      TextFormField(
+                        controller: _correctAnswerControllers[index],
+                        decoration: const InputDecoration(labelText: 'Correct Answer'),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  );
+                }),
+                ElevatedButton(
+                  onPressed: _addQuestion,
+                  child: const Text('Add Question'),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _saveQuiz,
+                  child: const Text('Save Quiz'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

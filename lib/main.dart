@@ -2,25 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'firebase_options.dart';
-import 'package:test_again/Screens/log_in_page.dart';
+import 'Screens/login_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFEFECEC),
+        scaffoldBackgroundColor: Colors.transparent,
+        textTheme: GoogleFonts.lexendDecaTextTheme(
+          Theme.of(context).textTheme,
+        ),
       ),
       home: const MyHomePage(),
     );
@@ -28,68 +31,73 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatelessWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+  const MyHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          height: double.infinity,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: double.infinity,
+      body: Stack(
+        children: [
+          Container(
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height,
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/images/background.png"),
+                fit: BoxFit.cover,
               ),
-              Image.asset(
-                "assets/images/logo.png",
-                height: 300,
-                width: 400,
-                fit: BoxFit.fill,
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Welcome to CISC KIDS APP!!  Iag",
-                    textAlign: TextAlign.center,
-                    style:  GoogleFonts.lexend(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 25,
-                        ),
-                    
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    " Mobile Reading Comprehension ",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
+            ),
+          ),
+          SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 50),
+                Image.asset(
+                  "assets/images/logo.png",
+                  height: 300,
+                  width: 400,
+                  fit: BoxFit.fill,
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Welcome to CISC KIDS APP!",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.lexendDeca(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 23,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-               Expanded(
-                 child: Container(
-                  padding: EdgeInsets.all(25),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Mobile Reading Comprehension",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.lexendDeca(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.all(30),
                   width: double.infinity,
                   child: Center(
                     child: Text(
-                      "we believe in the trans-formative power of education. Our mission is to empower learners and educators alike by providing innovative assessment solutions that foster meaningful learning experiences. We understand that assessment is not just about testing; it's about understanding, growth, and continuous improvement",
-                      textAlign: TextAlign.justify,
-                      style: GoogleFonts.lexend(
+                      "We believe in the power of education to transform lives. Our mission is to empower learners and educators through innovative assessments that foster meaningful learning. Assessment is not just about testing it's about understanding, growth, and continuous improvement.",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.lexendDeca(
                         fontWeight: FontWeight.w300,
-                        fontSize: 25,
+                        fontSize: 20,
                       ),
                     ),
                   ),
-                               ),
-               ),
-              Expanded(
-                child: Container(
+                ),
+                Container(
+                  margin: const EdgeInsets.only(top: 0),
                   height: 50,
                   width: 300,
                   decoration: BoxDecoration(
@@ -115,10 +123,11 @@ class MyHomePage extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import '../constant.dart';
 
 class OptionCard extends StatelessWidget {
   const OptionCard (
-    {Key? key, 
+    {super.key, 
   required this.option, 
   required this.color, 
-  required this.onTap,}) 
-  : super(key: key);
+  required this.onTap,});
   final String option;
   final VoidCallback onTap;
   final Color color;
@@ -21,7 +19,7 @@ class OptionCard extends StatelessWidget {
         title: Text(
         option, 
         textAlign: TextAlign.center,
-        style: TextStyle( 
+        style: const TextStyle( 
           fontSize: 22.0,
       
             ),

@@ -17,8 +17,8 @@ class Student {
 
   factory Student.fromFirestore(Map<String, dynamic> data) {
     return Student(
-      firstName: data['firstname'] ?? 'Unknown',
-      lastName: data['lastname'] ?? 'Unknown',
+      firstName: data['firstName'] ?? 'Unknown',
+      lastName: data['lastName'] ?? 'Unknown',
       gradeLevel: data['gradeLevel'] ?? 'Unknown',
       gender: data['gender'] ?? 'Unknown',
       profilePictureUrl: data['profilePictureUrl'] ?? '',

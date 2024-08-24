@@ -6,11 +6,11 @@ class EditDeleteUpdateButtons extends StatelessWidget {
   final VoidCallback onUpdatePressed;
 
   const EditDeleteUpdateButtons({
-    Key? key,
+    super.key,
     required this.onEditPressed,
     required this.onDeletePressed,
     required this.onUpdatePressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,15 +19,15 @@ class EditDeleteUpdateButtons extends StatelessWidget {
       children: [
         ElevatedButton(
           onPressed: onEditPressed,
-          child: Text('Edit'),
+          child: const Text('Edit'),
         ),
         ElevatedButton(
           onPressed: onDeletePressed,
-          child: Text('Delete'),
+          child: const Text('Delete'),
         ),
         ElevatedButton(
           onPressed: onUpdatePressed,
-          child: Text('Update'),
+          child: const Text('Update'),
         ),
       ],
     );

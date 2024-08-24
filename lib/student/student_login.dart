@@ -1,72 +1,74 @@
-  import 'package:flutter/material.dart';
-  import 'student_sign_up.dart';
-  import 'student_home_page.dart';
-  import 'package:firebase_auth/firebase_auth.dart';
-  import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'student_sign_up.dart';
+import 'student_home_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:test_again/widgets/background.dart'; // Import the Background widget
 
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  class LogInStudent extends StatefulWidget {
-    const LogInStudent({Key? key}) : super(key: key);
+class LogInStudent extends StatefulWidget {
+  const LogInStudent({super.key});
 
-    @override
-    State<LogInStudent> createState() => _LogInStudentState();
-  }
+  @override
+  State<LogInStudent> createState() => _LogInStudentState();
+}
 
-  class _LogInStudentState extends State<LogInStudent> {
-    final TextEditingController _email = TextEditingController();
-    final TextEditingController _pwd = TextEditingController();
-    bool _obscureText = true; // Variable to toggle password visibility
+class _LogInStudentState extends State<LogInStudent> {
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _pwd = TextEditingController();
+  bool _obscureText = true; // Variable to toggle password visibility
 
-    Future<void> _login() async {
-      if (_formKey.currentState!.validate()) {
-        try {
-          UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-            email: _email.text,
-            password: _pwd.text,
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _email.text,
+          password: _pwd.text,
+        );
+        // Check role from Firestore
+        var userDoc = await FirebaseFirestore.instance.collection('Users').doc(userCredential.user!.uid).get();
+        if (userDoc.exists && userDoc.data()!['role'] == 'student') {
+          // Navigate to StudentHomePage on successful login
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const StudentHomePage(),
+            ),
           );
-          // Check role from Firestore
-          var userDoc = await FirebaseFirestore.instance.collection('Users').doc(userCredential.user!.uid).get();
-          if (userDoc.exists && userDoc.data()!['role'] == 'student') {
-            // Navigate to StudentHomePage on successful login
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const StudentHomePage(),
-              ),
-            );
-          } else {
-            // Not a student
-            throw Exception('Not authorized as student');
-          }
-        } catch (e) {
-          // Handle login errors
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('Login Failed'),
-                content: Text(e is FirebaseAuthException ? e.message! : 'Invalid email or password.'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
+        } else {
+          // Not a student
+          throw Exception('Not authorized as student');
         }
+      } catch (e) {
+        // Handle login errors
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Login Failed'),
+              content: Text(e is FirebaseAuthException ? e.message! : 'Invalid email or password.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
       }
     }
+  }
 
-    @override
-    Widget build(BuildContext context) {
-      return Scaffold(
-        resizeToAvoidBottomInset: false, // Prevent the screen from resizing when the keyboard appears
-        body: Padding(
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: false, // Prevent the screen from resizing when the keyboard appears
+      body: Background(
+        child: Padding(
           padding: const EdgeInsets.all(15.0),
           child: Form(
             key: _formKey,
@@ -83,7 +85,7 @@
                   child: const Text(
                     "Welcome Back, Student!",
                     style: TextStyle(
-                      fontSize: 40,
+                      fontSize: 30,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -92,7 +94,7 @@
                   keyboardType: TextInputType.emailAddress,
                   controller: _email,
                   validator: (email) => email!.isNotEmpty ? null : 'Please enter your email',
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.email),
                     labelText: "Email Address",
                     hintText: "Please Enter Your Email",
@@ -120,7 +122,7 @@
                     ),
                     labelText: "Password",
                     hintText: "Please Enter Your Password",
-                    border: OutlineInputBorder(
+                    border: const OutlineInputBorder(
                       borderSide: BorderSide(),
                     ),
                   ),
@@ -140,7 +142,7 @@
                               height: 100,
                               alignment: Alignment.center,
                               child: TextFormField(
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   border: OutlineInputBorder(
                                     borderSide: BorderSide(),
                                   ),
@@ -178,6 +180,9 @@
                   },
                   child: const Text(
                     "Forgot Password?",
+                    style: TextStyle(
+                    color: Color.fromARGB(255, 61, 58, 58),
+                    ),
                   ),
                 ),
                 const SizedBox(
@@ -188,7 +193,7 @@
                   width: 500,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: const Color(0xFF15A323),
                     ),
                     onPressed: _login,
                     child: const Text(
@@ -221,6 +226,9 @@
                       },
                       child: const Text(
                         "Sign Up Now!",
+                        style: TextStyle(
+                        color: Colors.black,
+                        ),
                       ),
                     ),
                   ],
@@ -229,6 +237,7 @@
             ),
           ),
         ),
-      );
-    }
+      ),
+    );
   }
+}

@@ -74,7 +74,7 @@ class _TeacherDrawerState extends State<TeacherDrawer> {
                         Text(
                           "$firstName $lastName",
                           style: const TextStyle(
-                            fontSize: 22,
+                            fontSize: 21,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),

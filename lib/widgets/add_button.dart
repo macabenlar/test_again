@@ -6,11 +6,11 @@ class CustomAddButton extends StatelessWidget {
   final TextEditingController contentController;
 
   const CustomAddButton({
-    Key? key,
+    super.key,
     required this.onPressed,
     required this.titleController,
     required this.contentController,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

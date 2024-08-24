@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:test_again/widgets/background_reading.dart'; // Import the Background widget
 
 class QuizPage extends StatefulWidget {
   final String quizId;
 
-  const QuizPage({Key? key, required this.quizId}) : super(key: key);
+  const QuizPage({super.key, required this.quizId});
 
   @override
   _QuizPageState createState() => _QuizPageState();
@@ -103,41 +104,42 @@ class _QuizPageState extends State<QuizPage> {
         automaticallyImplyLeading: false, // Remove the back button
         backgroundColor: const Color(0xFF15A323),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 30), // Add space at the top
-            Text(
-              question['question'],
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const Divider(
-              height: 30,
-              thickness: 0.5,
-              color: Colors.black, // Add a divider line between the question and options
-            ),
-            ...['A', 'B', 'C', 'D'].map((option) {
-              return ListTile(
-                leading: Radio<String>(
-                  value: option,
-                  groupValue: selectedOption,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedOption = value;
-                    });
-                  },
-                ),
-                title: Text(question['options'][option]),
-              );
-            }).toList(),
-          ],
+      body: Background( // Use Background widget
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 30), // Add space at the top
+              Text(
+                question['question'],
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const Divider(
+                height: 30,
+                thickness: 0.5,
+                color: Colors.black, // Add a divider line between the question and options
+              ),
+              ...['A', 'B', 'C', 'D'].map((option) {
+                return ListTile(
+                  leading: Radio<String>(
+                    value: option,
+                    groupValue: selectedOption,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedOption = value;
+                      });
+                    },
+                  ),
+                  title: Text(question['options'][option]),
+                );
+              }),
+            ],
+          ),
         ),
       ),
       floatingActionButton: ElevatedButton(
         onPressed: submitAnswer,
-        child: const Text('NEXT'),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF15A323), // Background color
           foregroundColor: Colors.white, // Text color
@@ -146,6 +148,7 @@ class _QuizPageState extends State<QuizPage> {
             borderRadius: BorderRadius.circular(30),
           ),
         ),
+        child: const Text('NEXT'),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );

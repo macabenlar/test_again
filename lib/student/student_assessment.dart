@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constant.dart';
 import 'story_detail_and_quiz_page.dart';
+import 'package:test_again/widgets/background.dart'; // Ensure this import is correct
 
 class StudentAssessment extends StatefulWidget {
   final String studentId;
 
-  const StudentAssessment({Key? key, required this.studentId}) : super(key: key);
+  const StudentAssessment({super.key, required this.studentId});
 
   @override
   State<StudentAssessment> createState() => _StudentAssessmentState();
@@ -55,7 +56,7 @@ class _StudentAssessmentState extends State<StudentAssessment> {
         appBar: AppBar(
           title: const Text('Loading...', style: TextStyle(color: neutralColor)),
           centerTitle: true,
-          automaticallyImplyLeading: false, // Remove the back button
+          automaticallyImplyLeading: false,
           backgroundColor: Colors.green,
           shadowColor: const Color.fromARGB(255, 0, 0, 0),
         ),
@@ -64,65 +65,76 @@ class _StudentAssessmentState extends State<StudentAssessment> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('ASSIGNED PASSAGES', style: TextStyle(color: neutralColor)),
-        centerTitle: true,
-        automaticallyImplyLeading: false, // Remove the back button
-        backgroundColor: Colors.green,
-        shadowColor: const Color.fromARGB(255, 0, 0, 0),
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.only(top: 20.0), // Add space at the top
-        itemCount: assignedItems.length,
-        itemBuilder: (context, index) {
-          var item = assignedItems[index];
-          var storyId = item['storyId'];
-          var quizId = item['quizId'];
+      body: Background( // Assuming Background is the widget from background.dart
+        child: Column(
+          children: [
+            AppBar(
+              title: const Text('ASSIGNED PASSAGES', style: TextStyle(color: neutralColor)),
+              centerTitle: true,
+              automaticallyImplyLeading: false,
+              backgroundColor: Colors.green,
+              shadowColor: const Color.fromARGB(255, 0, 0, 0),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.only(top: 20.0),
+                itemCount: assignedItems.length,
+                itemBuilder: (context, index) {
+                  var item = assignedItems[index];
+                  var storyId = item['storyId'];
+                  var quizId = item['quizId'];
 
-          return FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance.collection('Stories').doc(storyId).get(),
-            builder: (context, storySnapshot) {
-              if (!storySnapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
+                  return FutureBuilder<DocumentSnapshot>(
+                    future: FirebaseFirestore.instance.collection('Stories').doc(storyId).get(),
+                    builder: (context, storySnapshot) {
+                      if (storySnapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (storySnapshot.hasError) {
+                        return Center(child: Text('Error: ${storySnapshot.error}'));
+                      } else if (!storySnapshot.hasData || !storySnapshot.data!.exists) {
+                        return const Center(child: Text('Story not found'));
+                      }
 
-              var storyData = storySnapshot.data;
-              var storyTitle = storyData?['title'] ?? 'No Title';
+                      var storyData = storySnapshot.data;
+                      var storyTitle = storyData?['title'] ?? 'No Title';
 
-              return Card(
-                color: Colors.green, // Set the card color to green
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0), // More rounded corners
-                ),
-                margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-                child: ListTile(
-                  title: Text(
-                    storyTitle,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                  trailing: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => StoryDetailAndQuizPage(
-                            storyId: storyId,
-                            quizId: quizId,
+                      return Card(
+                        color: Colors.green,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                        child: ListTile(
+                          title: Text(
+                            storyTitle,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                          trailing: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => StoryDetailAndQuizPage(
+                                    storyId: storyId,
+                                    quizId: quizId,
+                                  ),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.green, backgroundColor: Colors.white,
+                            ),
+                            child: const Text('Read & Quiz'),
                           ),
                         ),
                       );
                     },
-                    child: const Text('Read & Quiz'),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.green, backgroundColor: Colors.white, // Text color
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
