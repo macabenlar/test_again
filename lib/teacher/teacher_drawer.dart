@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:test_again/teacher/teacher_instruction.dart';
+import 'package:test_again/teacher/teacher_profile.dart'; // Import the Instruction page
 
 class TeacherDrawer extends StatefulWidget {
   final String teacherId;
@@ -98,29 +100,30 @@ class _TeacherDrawerState extends State<TeacherDrawer> {
               Navigator.pop(context);
             },
           ),
-          ListTile(
+           ListTile(
             leading: const Icon(Icons.person),
             title: const Text("Profile"),
             onTap: () {
-              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TeacherProfilePage()),
+                
+                );
             },
           ),
           ListTile(
-            leading: const Icon(Icons.note_add),
-            title: const Text("Assessments"),
+            leading: const Icon(Icons.help_outline),
+            title: const Text("Help"),
             onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.computer),
-            title: const Text("Students"),
-            onTap: () {
-              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TeacherInstructionPage()),
+              );
+              
             },
           ),
           const SizedBox(
-            height: 170,
+            height: 250,
           ),
           const Divider(thickness: 1, color: Colors.black),
           ListTile(

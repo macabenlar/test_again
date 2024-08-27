@@ -16,6 +16,7 @@ class _QuizPageState extends State<QuizPage> {
   int currentIndex = 0;
   int score = 0;
   String? selectedOption;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -27,14 +28,36 @@ class _QuizPageState extends State<QuizPage> {
     try {
       var quizSnapshot = await FirebaseFirestore.instance.collection('Quizzes').doc(widget.quizId).get();
       var quizData = quizSnapshot.data();
-      if (quizData != null) {
+
+      if (quizData != null && quizData.containsKey('questions')) {
         var questionsList = List<Map<String, dynamic>>.from(quizData['questions']);
         setState(() {
-          questions = questionsList;
+          questions = questionsList.map((question) {
+            if (question['answers'] == null) {
+              question['answers'] = {'A': '', 'B': '', 'C': '', 'D': ''};
+            } else {
+              for (var key in ['A', 'B', 'C', 'D']) {
+                if (!question['answers'].containsKey(key)) {
+                  question['answers'][key] = '';
+                }
+              }
+            }
+            return question;
+          }).toList();
+          isLoading = false;
         });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No questions available for this quiz.')),
+        );
+        Navigator.pop(context);
       }
     } catch (e) {
       print("Error loading quiz: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load quiz: $e')),
+      );
+      Navigator.pop(context);
     }
   }
 
@@ -83,7 +106,7 @@ class _QuizPageState extends State<QuizPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (questions.isEmpty) {
+    if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
@@ -98,42 +121,55 @@ class _QuizPageState extends State<QuizPage> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
+            fontSize: 20,
           ),
         ),
-        centerTitle: true, // Center the title text
-        automaticallyImplyLeading: false, // Remove the back button
+        centerTitle: true,
+        automaticallyImplyLeading: false,
         backgroundColor: const Color(0xFF15A323),
       ),
-      body: Background( // Use Background widget
+      body: Background(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 30), // Add space at the top
+              const SizedBox(height: 30),
               Text(
-                question['question'],
+                '${currentIndex + 1}. ${question['question'] ?? 'No question provided'}',
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const Divider(
                 height: 30,
                 thickness: 0.5,
-                color: Colors.black, // Add a divider line between the question and options
+                color: Colors.black,
               ),
-              ...['A', 'B', 'C', 'D'].map((option) {
-                return ListTile(
-                  leading: Radio<String>(
-                    value: option,
-                    groupValue: selectedOption,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedOption = value;
-                      });
-                    },
-                  ),
-                  title: Text(question['options'][option]),
-                );
-              }),
+              Column(
+                children: ['A', 'B', 'C', 'D'].map((option) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Row(
+                      children: [
+                        Radio<String>(
+                          value: option,
+                          groupValue: selectedOption,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedOption = value;
+                            });
+                          },
+                        ),
+                        Expanded(
+                          child: Text(
+                            question['answers'][option] ?? '',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
             ],
           ),
         ),
@@ -141,8 +177,8 @@ class _QuizPageState extends State<QuizPage> {
       floatingActionButton: ElevatedButton(
         onPressed: submitAnswer,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF15A323), // Background color
-          foregroundColor: Colors.white, // Text color
+          backgroundColor: const Color(0xFF15A323),
+          foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),

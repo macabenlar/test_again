@@ -1,39 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:test_again/widgets/story_list_widget.dart';
 import 'package:test_again/teacher/story_detail_page.dart';
-import 'package:test_again/widgets/background.dart'; // Import the Background widget
-import 'package:test_again/screens/create_story_page.dart'; // Import CreateStoryPage
+import 'package:test_again/widgets/background.dart';
+import 'package:test_again/screens/create_story_page.dart';
 import 'assessment_quizzes.dart';
-import 'package:test_again/widgets/assign_story_quiz_page.dart'; // Import the AssignStoryQuizPage
-import 'package:test_again/widgets/add_button.dart'; // Import the CustomAddButton
+import 'package:test_again/widgets/assign_story_quiz_page.dart';
 
-class AssessmentPage extends StatefulWidget { 
-  const AssessmentPage({super.key});
+class AssessmentPage extends StatefulWidget {
+  final String teacherId;
+
+  const AssessmentPage({super.key, required this.teacherId});
 
   @override
   _AssessmentPageState createState() => _AssessmentPageState();
 }
 
-class _AssessmentPageState extends State<AssessmentPage> {
+class _AssessmentPageState extends State<AssessmentPage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   Color passagesColor = Colors.yellow;
   Color quizzesColor = Colors.white;
 
-  void navigateToStoryDetail(String docId, String title, String content) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => StoryDetailPage(docId: docId, title: title, content: content),
-      ),
-    );
+  String? selectedSet;
+  String? selectedGradeLevel;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Background( // Background widget as a wrapper for all content
+      body: Background(
         child: Scaffold(
-          backgroundColor: Color.fromARGB(0, 110, 13, 13), // Make Scaffold transparent
+          backgroundColor: Colors.transparent,
           appBar: AppBar(
             automaticallyImplyLeading: false,
             backgroundColor: const Color(0xFF15A323),
@@ -41,90 +48,251 @@ class _AssessmentPageState extends State<AssessmentPage> {
             title: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                GestureDetector(
+                _buildNavigationTab(
+                  label: 'Passages',
+                  color: passagesColor,
                   onTap: () {},
-                  child: Text(
-                    'Passages',
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      color: passagesColor,
-                    ),
-                  ),
                 ),
-                Container(
-                  width: 2,
-                  height: 20,
-                  margin: const EdgeInsets.symmetric(horizontal: 10),
-                  color: Colors.white,
-                ),
-                GestureDetector(
+                _buildVerticalDivider(),
+                _buildNavigationTab(
+                  label: 'Quizzes',
+                  color: quizzesColor,
                   onTap: () {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const AssessmentQuizzesPage(),
+                        builder: (context) => AssessmentQuizzesPage(teacherId: widget.teacherId),
                       ),
                     );
                   },
-                  child: Text(
-                    'Quizzes',
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      color: quizzesColor,
-                    ),
-                  ),
                 ),
               ],
             ),
+            bottom: TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Pretest'),
+                Tab(text: 'Custom'),
+                Tab(text: 'Posttest'),
+              ],
+              indicatorColor: Colors.white,
+              labelStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
-          body: Stack(
+          body: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 100.0),
-                child: StoryListWidget(
-                  onTapStory: (docId, title, content) {
-                    navigateToStoryDetail(docId, title, content);
-                  },
+              _buildFilterSection(),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildStoryListView('pretest'),
+                    _buildStoryListView('custom'),
+                    _buildStoryListView('posttest'),
+                  ],
                 ),
               ),
-              Positioned(
-                bottom: 16.0,
-                right: 16.0,
-                child: FloatingActionButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AssignStoryQuizPage(),
-                      ),
-                    );
-                  },
-                  backgroundColor: Colors.green,
-                  child: const Icon(Icons.assignment_ind),
-                ),
-              ),
-              Positioned(
-                top: 16.0,
-                left: 16.0,
-                child: CustomAddButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CreateStoryPage(),
-                      ),
-                    );
-                  },
-                  titleController: TextEditingController(), // Not used in this case, can be null
-                  contentController: TextEditingController(), // Not used in this case, can be null
-                ),
-              ),
+              _buildBottomSection(), // Added bottom section for add and assign buttons
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildNavigationTab({required String label, required Color color, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 25,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVerticalDivider() {
+    return Container(
+      width: 2,
+      height: 20,
+      margin: const EdgeInsets.symmetric(horizontal: 10),
+      color: Colors.white,
+    );
+  }
+
+  Widget _buildFilterSection() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          DropdownButton<String>(
+            value: selectedSet,
+            hint: const Text('Select Set'),
+            items: ['A', 'B', 'C', 'D'].map((set) {
+              return DropdownMenuItem(
+                value: set,
+                child: Text(set),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                selectedSet = value;
+              });
+            },
+          ),
+          DropdownButton<String>(
+            value: selectedGradeLevel,
+            hint: const Text('Select Grade Level'),
+            items: ['Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'].map((grade) {
+              return DropdownMenuItem(
+                value: grade,
+                child: Text(grade),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                selectedGradeLevel = value;
+              });
+            },
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                selectedSet = null;
+                selectedGradeLevel = null;
+              });
+            },
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStoryListView(String testType) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('Stories')
+          .where('teacherId', isEqualTo: widget.teacherId)
+          .where('type', isEqualTo: testType)
+          .where('set', isEqualTo: selectedSet)
+          .where('gradeLevel', isEqualTo: selectedGradeLevel)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('Error: ${snapshot.error}'),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Text('No data found'),
+          );
+        }
+
+        var stories = snapshot.data!.docs;
+
+        return ListView.builder(
+          itemCount: stories.length,
+          itemBuilder: (context, index) {
+            var data = stories[index].data() as Map<String, dynamic>;
+            var title = data['title'] ?? 'Untitled';
+            var gradeLevel = data['gradeLevel'] ?? 'N/A';
+            var set = data['set'] ?? 'N/A';
+
+            return ListTile(
+              title: Text(
+                '$title',
+                style: const TextStyle(fontSize: 16),
+              ),
+              subtitle: Text('Grade Level: $gradeLevel, Set: $set'),
+              onTap: () {
+                _navigateToStoryDetail(title);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CreateStoryPage(teacherId: widget.teacherId),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Add Passage'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16), // Space between the two buttons
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () {
+                // Navigate to the AssignStoryQuizPage
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AssignStoryQuizPage(teacherId: widget.teacherId),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.assignment),
+              label: const Text('Assign Passage'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToStoryDetail(String title) {
+    FirebaseFirestore.instance
+        .collection('Stories')
+        .where('title', isEqualTo: title)
+        .get()
+        .then((querySnapshot) {
+      if (querySnapshot.docs.isNotEmpty) {
+        var doc = querySnapshot.docs.first;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => StoryDetailPage(
+              docId: doc.id,
+              title: doc['title'],
+              content: doc['content'],
+            ),
+          ),
+        );
+      }
+    });
   }
 }

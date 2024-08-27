@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:test_again/widgets/background.dart'; // Import the Background widget
+import 'package:test_again/widgets/background.dart';
 
 class AssignStoryQuizPage extends StatefulWidget {
-  const AssignStoryQuizPage({super.key});
+  final String teacherId;
+
+  const AssignStoryQuizPage({super.key, required this.teacherId});
 
   @override
+  // ignore: library_private_types_in_public_api
   _AssignStoryQuizPageState createState() => _AssignStoryQuizPageState();
 }
 
@@ -19,15 +22,19 @@ class _AssignStoryQuizPageState extends State<AssignStoryQuizPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Assign Story and Quiz',
+          'Assign Passage',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: const Color(0xFF15A323),
-        automaticallyImplyLeading: false,
         centerTitle: true,
+        automaticallyImplyLeading: true,
+        leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: Background(
         child: Center(
@@ -37,7 +44,7 @@ class _AssignStoryQuizPageState extends State<AssignStoryQuizPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('Students').snapshots(),
+                  stream: FirebaseFirestore.instance.collection('Students').where('teacherId', isEqualTo: widget.teacherId).snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return const CircularProgressIndicator();
@@ -69,7 +76,7 @@ class _AssignStoryQuizPageState extends State<AssignStoryQuizPage> {
                 ),
                 const SizedBox(height: 16),
                 StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('Stories').snapshots(),
+                  stream: FirebaseFirestore.instance.collection('Stories').where('teacherId', isEqualTo: widget.teacherId).snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return const CircularProgressIndicator();
@@ -100,7 +107,7 @@ class _AssignStoryQuizPageState extends State<AssignStoryQuizPage> {
                 ),
                 const SizedBox(height: 16),
                 StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('Quizzes').snapshots(),
+                  stream: FirebaseFirestore.instance.collection('Quizzes').where('teacherId', isEqualTo: widget.teacherId).snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return const CircularProgressIndicator();
@@ -137,6 +144,7 @@ class _AssignStoryQuizPageState extends State<AssignStoryQuizPage> {
                         'studentId': selectedStudent,
                         'storyId': selectedStory,
                         'quizId': selectedQuiz,
+                        'teacherId': widget.teacherId,
                       }).then((_) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Story and Quiz Assigned Successfully')),
@@ -163,7 +171,7 @@ class _AssignStoryQuizPageState extends State<AssignStoryQuizPage> {
                   ),
                   child: const Text('Assign', style: TextStyle(
                     color: Colors.black,
-                  ),),
+                  )),
                 ),
               ],
             ),

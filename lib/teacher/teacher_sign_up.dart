@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:test_again/widgets/background.dart'; // Import the Background widget
+import 'package:test_again/utils/code_generator.dart';  // Import the code generator
+import 'dart:math';
+
 
 class SignUpTeacher extends StatefulWidget {
   const SignUpTeacher({super.key});
@@ -20,6 +23,7 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
   String? _errorMessage;
   bool _showPassword = false;
   bool _showConfirmPassword = false;
+  bool _loading = false;
 
   @override
   void initState() {
@@ -44,12 +48,12 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
   void _validateInputs() {
     setState(() {
       _isButtonDisabled = !(_emailController.text.isNotEmpty &&
-                            _passwordController.text.isNotEmpty &&
-                            _confirmPasswordController.text.isNotEmpty &&
-                            _firstNameController.text.isNotEmpty &&
-                            _lastNameController.text.isNotEmpty &&
-                            _passwordController.text == _confirmPasswordController.text &&
-                            _passwordController.text.length >= 6);
+          _passwordController.text.isNotEmpty &&
+          _confirmPasswordController.text.isNotEmpty &&
+          _firstNameController.text.isNotEmpty &&
+          _lastNameController.text.isNotEmpty &&
+          _passwordController.text == _confirmPasswordController.text &&
+          _passwordController.text.length >= 6);
 
       if (_isButtonDisabled) {
         if (_passwordController.text != _confirmPasswordController.text) {
@@ -76,7 +80,11 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
   }
 
   Future<void> signUp() async {
-    if (_isButtonDisabled) return; // Do not proceed with signup if button is disabled
+    if (_isButtonDisabled) return;
+
+    setState(() {
+      _loading = true;
+    });
 
     try {
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -84,7 +92,15 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
         password: _passwordController.text,
       );
 
-      // Add user details to Firestore
+      if (userCredential.user == null) {
+        throw FirebaseAuthException(
+          code: 'user-creation-failed',
+          message: 'User creation failed. Please try again.',
+        );
+      }
+
+      String teacherCode = await generateAndSaveTeacherCode(userCredential.user!.uid);
+
       await FirebaseFirestore.instance.collection('Users').doc(userCredential.user!.uid).set({
         'email': _emailController.text,
         'role': 'teacher',
@@ -95,18 +111,39 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
         'firstname': _firstNameController.text,
         'lastname': _lastNameController.text,
         'createdAt': FieldValue.serverTimestamp(),
+        'teacherId': userCredential.user!.uid,
+        'teacherCode': teacherCode,
       });
 
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Registration successful! Welcome!'),
       ));
-      Navigator.pop(context); // Navigate back to the login page
+      Navigator.pop(context);
+
     } catch (e) {
-      // Handle errors in sign up
+      setState(() {
+        _loading = false;
+      });
+
       String errorMessage = 'Registration failed. Please try again.';
-      if (e is FirebaseAuthException && e.code == 'email-already-in-use') {
-        errorMessage = 'The email address is already in use. Please use a different email.';
+      if (e is FirebaseAuthException) {
+        if (e.code == 'email-already-in-use') {
+          errorMessage = 'The email address is already in use. Please use a different email.';
+        } else if (e.code == 'weak-password') {
+          errorMessage = 'The password is too weak. Please choose a stronger password.';
+        } else if (e.code == 'invalid-email') {
+          errorMessage = 'The email address is not valid. Please enter a valid email.';
+        } else if (e.code == 'user-creation-failed') {
+          errorMessage = e.message ?? errorMessage;
+        }
+      } else {
+        print("Unexpected error: $e");
       }
+      
+      setState(() {
+        _errorMessage = errorMessage;
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(errorMessage),
       ));
@@ -133,7 +170,7 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
                 child: const Text(
                   "Teacher Registration",
                   style: TextStyle(
-                    fontSize: 35,
+                    fontSize: 25,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -220,6 +257,13 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
                 ),
               ],
               const SizedBox(height: 20),
+              if (_loading) ...[
+                const SizedBox(height: 20),
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                ),
+                const SizedBox(height: 20),
+              ],
               SizedBox(
                 height: 55,
                 width: 500,
@@ -238,7 +282,6 @@ class _SignUpTeacherState extends State<SignUpTeacher> {
                   ),
                 ),
               ),
-              
             ],
           ),
         ),

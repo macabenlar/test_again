@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_again/teacher/student_list_page.dart';
 import 'package:test_again/teacher/teacher_drawer.dart';
 import 'package:test_again/teacher/assessment_page.dart';
-import 'package:test_again/widgets/background.dart'; // Import the Background widget
+import 'package:test_again/widgets/background.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TeacherHomePage extends StatefulWidget {
-  final String teacherId; // Add teacherId parameter
+  final String teacherId;
 
   const TeacherHomePage({super.key, required this.teacherId});
 
@@ -16,6 +18,50 @@ class TeacherHomePage extends StatefulWidget {
 
 class _TeacherHomePageState extends State<TeacherHomePage> {
   int _backButtonCount = 0;
+  late String teacherId;
+  String? teacherCode;
+
+  @override
+  void initState() {
+    super.initState();
+    teacherId = widget.teacherId;
+    _fetchTeacherCode();
+    _checkShowInstructionOverlay();
+  }
+
+  Future<void> _fetchTeacherCode() async {
+    try {
+      DocumentSnapshot teacherDoc = await FirebaseFirestore.instance
+          .collection('Teachers')
+          .doc(teacherId)
+          .get();
+
+      if (teacherDoc.exists) {
+        setState(() {
+          teacherCode = teacherDoc['teacherCode'];
+        });
+      } else {
+        setState(() {
+          teacherCode = 'No code found';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        teacherCode = 'Error fetching code';
+      });
+    }
+  }
+
+  Future<void> _checkShowInstructionOverlay() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+    });
+  }
+
+  Future<void> _setShowInstructionOverlay(bool value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('showInstructionOverlay', value);
+  }
 
   Future<void> _confirmLogout() async {
     final shouldLogout = await showDialog<bool>(
@@ -40,7 +86,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
 
     if (shouldLogout == true) {
       await FirebaseAuth.instance.signOut();
-      Navigator.popUntil(context, ModalRoute.withName('/')); // Navigate to the initial route
+      Navigator.popUntil(context, ModalRoute.withName('/'));
     }
   }
 
@@ -55,10 +101,10 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
           setState(() {
             _backButtonCount++;
           });
-          return false; // Prevent back navigation
+          return false;
         } else {
           await _confirmLogout();
-          return false; // Prevent back navigation
+          return false;
         }
       },
       child: Background(
@@ -72,74 +118,84 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            backgroundColor: const Color(0xFF15A323),
             centerTitle: true,
           ),
-          drawer: TeacherDrawer(teacherId: widget.teacherId), // Pass teacherId here
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AssessmentPage()),
-                    );
-                  },
-                  child: Container(
-                    width: 180,
-                    height: 90,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      image: const DecorationImage(
-                        image: AssetImage('assets/images/Assessment.png'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'Assessment',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+          drawer: TeacherDrawer(teacherId: teacherId),
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Teacher Code: ${teacherCode ?? 'No code generated'}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
-                const SizedBox(height: 20),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => StudentListPage(teacherId: widget.teacherId)),
-                    );
-                  },
-                  child: Container(
-                    width: 180,
-                    height: 90,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      image: const DecorationImage(
-                        image: AssetImage('assets/images/Student.png'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'Student List',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+              ),
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AssessmentPage(teacherId: teacherId),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF15A323),
+                          padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          'Assessment',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => StudentListPage(teacherId: teacherId),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF15A323),
+                          padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          'Student List',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

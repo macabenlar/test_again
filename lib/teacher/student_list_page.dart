@@ -33,7 +33,14 @@ class _StudentListPageState extends State<StudentListPage> {
         ),
         backgroundColor: const Color(0xFF15A323),
         centerTitle: true,
-        automaticallyImplyLeading: false, // Remove the back button icon
+        automaticallyImplyLeading: true,
+        leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.of(context).pop(),
+
+
+
+        ), // cutomize the back button
       ),
       body: Background(
         child: Column(
@@ -107,7 +114,10 @@ class _StudentListPageState extends State<StudentListPage> {
             ),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection('Students').snapshots(),
+                stream: FirebaseFirestore.instance
+                    .collection('Students')
+                    .where('teacherId', isEqualTo: widget.teacherId)
+                    .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return const Center(child: Text('Error loading students.'));
@@ -125,11 +135,6 @@ class _StudentListPageState extends State<StudentListPage> {
                   var students = snapshot.data!.docs.map((doc) {
                     return Student.fromFirestore(doc.data() as Map<String, dynamic>);
                   }).toList();
-
-                  // Debugging: Print student data to console
-                  for (var student in students) {
-                    print('Students Data: ${student.firstName} ${student.lastName}');
-                  }
 
                   // Apply search filter
                   if (_searchText.isNotEmpty) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:test_again/widgets/background.dart'; // Import the Background widget
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:test_again/widgets/background.dart';
 
 class SignUpStudent extends StatefulWidget {
   const SignUpStudent({super.key});
@@ -16,21 +16,21 @@ class _SignUpStudentState extends State<SignUpStudent> {
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _teacherCodeController = TextEditingController();
+  final TextEditingController _scoreController = TextEditingController();
+  String? _selectedTeacherId;
   String? _selectedGradeLevel;
-  String? _selectedGender;
+  String? _selectedGender; // Added gender field
   bool _isButtonDisabled = true;
   String? _errorMessage;
-  bool _showPassword = false;
-  bool _showConfirmPassword = false;
+  bool _loading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void initState() {
     super.initState();
-    _emailController.addListener(_validateInputs);
-    _passwordController.addListener(_validateInputs);
-    _confirmPasswordController.addListener(_validateInputs);
-    _firstNameController.addListener(_validateInputs);
-    _lastNameController.addListener(_validateInputs);
+    _addListeners();
   }
 
   @override
@@ -40,283 +40,284 @@ class _SignUpStudentState extends State<SignUpStudent> {
     _confirmPasswordController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _teacherCodeController.dispose();
+    _scoreController.dispose();
     super.dispose();
   }
 
-  void _validateInputs() {
-    bool isFieldsNotEmpty = _emailController.text.isNotEmpty &&
-                            _passwordController.text.isNotEmpty &&
-                            _confirmPasswordController.text.isNotEmpty &&
-                            _firstNameController.text.isNotEmpty &&
-                            _lastNameController.text.isNotEmpty &&
-                            _selectedGradeLevel != null &&
-                            _selectedGender != null &&
-                            _passwordController.text == _confirmPasswordController.text &&
-                            _passwordController.text.length >= 6;
-
-    setState(() {
-      _isButtonDisabled = !isFieldsNotEmpty;
-      _errorMessage = isFieldsNotEmpty ? null : 'Please fill in all fields correctly';
-    });
-  }
-
-  void _togglePasswordVisibility() {
-    setState(() {
-      _showPassword = !_showPassword;
-    });
-  }
-
-  void _toggleConfirmPasswordVisibility() {
-    setState(() {
-      _showConfirmPassword = !_showConfirmPassword;
-    });
+  void _addListeners() {
+    _emailController.addListener(_validateInputs);
+    _passwordController.addListener(_validateInputs);
+    _confirmPasswordController.addListener(_validateInputs);
+    _firstNameController.addListener(_validateInputs);
+    _lastNameController.addListener(_validateInputs);
+    _teacherCodeController.addListener(_validateInputs);
+    _scoreController.addListener(_validateInputs);
   }
 
   Future<void> signUp() async {
-    if (_isButtonDisabled) {
-      return; // Do not proceed with signup if button is disabled
-    }
-    
+    setState(() {
+      _loading = true;
+    });
+
     try {
-      // Check if email is already in use
-      final existingUser = await FirebaseFirestore.instance
-          .collection('Users')
-          .where('email', isEqualTo: _emailController.text)
-          .get();
-      
-      if (existingUser.docs.isNotEmpty) {
-        setState(() {
-          _errorMessage = 'Email is already in use';
-        });
-        return; // Do not proceed if email is already in use
-      }
-      
-      // Create user
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text,
         password: _passwordController.text,
       );
 
-      // Get the user UID
-      String uid = userCredential.user!.uid;
+      final teacherDoc = await FirebaseFirestore.instance
+          .collection('Teachers')
+          .doc(_selectedTeacherId)
+          .get();
 
-      // Store user information in Firestore under 'Users' collection
-      await FirebaseFirestore.instance.collection('Users').doc(uid).set({
-        'role': 'student',
-        'email': _emailController.text,
-        'firstName': _firstNameController.text,
-        'lastName': _lastNameController.text,
-        'gradeLevel': _selectedGradeLevel,
-        'gender': _selectedGender,
-      });
+      if (teacherDoc.exists && teacherDoc['teacherCode'] == _teacherCodeController.text) {
+        await FirebaseFirestore.instance.collection('Students').doc(userCredential.user!.uid).set({
+          'firstName': _firstNameController.text,
+          'lastName': _lastNameController.text,
+          'email': _emailController.text,
+          'gradeLevel': _selectedGradeLevel,
+          'gender': _selectedGender, // Added gender field to Firestore
+          'score': _scoreController.text,
+          'teacherId': _selectedTeacherId,
+        });
 
-      // Store user information in Firestore under 'Students' collection
-      await FirebaseFirestore.instance.collection('Students').doc(uid).set({
-        'uid': uid,
-        'firstName': _firstNameController.text,
-        'lastName': _lastNameController.text,
-        'gradeLevel': _selectedGradeLevel,
-        'gender': _selectedGender,
-      });
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Successfully registered!')),
-      );
-
-      Navigator.pop(context); // Go back to the previous screen
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Successfully registered!')),
+        );
+        Navigator.pop(context);
+      } else {
+        setState(() {
+          _errorMessage = 'Invalid teacher code.';
+        });
+      }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Sign up failed: ${e.toString()}';
+        _errorMessage = 'Registration failed: ${e.toString()}';
+      });
+    } finally {
+      setState(() {
+        _loading = false;
       });
     }
+  }
+
+  void _validateInputs() {
+    setState(() {
+      bool isFieldsNotEmpty = _emailController.text.isNotEmpty &&
+          _passwordController.text.isNotEmpty &&
+          _confirmPasswordController.text.isNotEmpty &&
+          _firstNameController.text.isNotEmpty &&
+          _lastNameController.text.isNotEmpty &&
+          _teacherCodeController.text.isNotEmpty &&
+          _selectedTeacherId != null &&
+          _selectedGradeLevel != null &&
+          _selectedGender != null && // Check if gender is selected
+          _scoreController.text.isNotEmpty;
+
+      bool isTeacherCodeValid = _teacherCodeController.text.length >= 6;
+      bool arePasswordsMatching = _passwordController.text == _confirmPasswordController.text;
+
+      if (isFieldsNotEmpty && isTeacherCodeValid && arePasswordsMatching) {
+        _isButtonDisabled = false;
+        _errorMessage = null;
+      } else {
+        _isButtonDisabled = true;
+        if (!isTeacherCodeValid) {
+          _errorMessage = 'Teacher code must be at least 6 characters long.';
+        } else if (!arePasswordsMatching) {
+          _errorMessage = 'Passwords do not match.';
+        } else {
+          _errorMessage = 'Please fill in all fields correctly.';
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true, // Allow the screen to resize when the keyboard appears
+      resizeToAvoidBottomInset: true,
       body: Background(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(15.0),
+          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                margin: const EdgeInsets.only(
-                  top: 50,
-                  bottom: 50,
-                ),
-                height: 50,
-                child: const Text(
-                  "Create Your Account",
-                  style: TextStyle(
-                    fontSize: 35,
-                    fontWeight: FontWeight.w500,
-                  ),
+              const Text(
+                "Create Your Account",
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+              const SizedBox(height: 30),
               TextFormField(
                 controller: _firstNameController,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.person),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.person),
                   labelText: "First Name",
-                  hintText: "Please Enter Your First Name",
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: _firstNameController.text.isEmpty ? Colors.red : Colors.grey,
-                    ),
-                  ),
+                  border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 20),
               TextFormField(
                 controller: _lastNameController,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.person),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.person),
                   labelText: "Last Name",
-                  hintText: "Please Enter Your Last Name",
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: _lastNameController.text.isEmpty ? Colors.red : Colors.grey,
-                    ),
-                  ),
+                  border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 20),
               TextFormField(
-                keyboardType: TextInputType.emailAddress,
                 controller: _emailController,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.email),
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.email),
                   labelText: "Email Address",
-                  hintText: "Please Enter Your Email",
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: _emailController.text.isEmpty ? Colors.red : Colors.grey,
-                    ),
-                  ),
+                  border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 20),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: !_showPassword,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.lock),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _showPassword ? Icons.visibility : Icons.visibility_off,
-                    ),
-                    onPressed: _togglePasswordVisibility,
-                  ),
-                  labelText: "Password",
-                  hintText: "Please Enter Your Password",
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: _passwordController.text.isEmpty ? Colors.red : Colors.grey,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _confirmPasswordController,
-                obscureText: !_showConfirmPassword,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.lock),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _showConfirmPassword ? Icons.visibility : Icons.visibility_off,
-                    ),
-                    onPressed: _toggleConfirmPasswordVisibility,
-                  ),
-                  labelText: "Confirm Password",
-                  hintText: "Please Confirm Your Password",
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: _confirmPasswordController.text.isEmpty ? Colors.red : Colors.grey,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              DropdownButtonFormField<String>(
-                value: _selectedGradeLevel,
-                hint: const Text('Select Grade Level'),
-                items: ['1', '2', '3', '4', '5', '6', '7'].map((grade) {
-                  return DropdownMenuItem(
-                    value: grade,
-                    child: Text('Grade $grade'),
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('Teachers').snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  var teachers = snapshot.data!.docs;
+                  return DropdownButtonFormField<String>(
+                    hint: const Text("Select Teacher"),
+                    items: teachers.map((doc) {
+                      return DropdownMenuItem<String>(
+                        value: doc.id,
+                        child: Text('${doc['firstname']} ${doc['lastname']}'),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedTeacherId = value;
+                        _validateInputs();
+                      });
+                    },
                   );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedGradeLevel = value;
-                  });
-                  _validateInputs(); // Validate inputs when grade level is selected
                 },
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: _selectedGradeLevel == null ? Colors.red : Colors.grey,
-                    ),
-                  ),
-                ),
               ),
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
-                value: _selectedGender,
-                hint: const Text('Select Gender'),
-                items: ['Male', 'Female'].map((gender) {
-                  return DropdownMenuItem(
-                    value: gender,
-                    child: Text(gender),
+                hint: const Text("Select Gender"), // Gender dropdown
+                items: <String>['Male', 'Female',].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
                   );
                 }).toList(),
                 onChanged: (value) {
                   setState(() {
                     _selectedGender = value;
+                    _validateInputs();
                   });
-                  _validateInputs(); // Validate inputs when gender is selected
                 },
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: _selectedGender == null ? Colors.red : Colors.grey,
-                    ),
-                  ),
-                ),
               ),
               const SizedBox(height: 20),
-              _errorMessage != null
-                  ? Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red),
-                    )
-                  : const SizedBox(),
+              TextFormField(
+                controller: _teacherCodeController,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.code),
+                  labelText: "Teacher Code",
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (_) => _validateInputs(),
+              ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _isButtonDisabled ? null : signUp,
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.resolveWith<Color?>(
-                    (Set<WidgetState> states) {
-                      return _isButtonDisabled ? Colors.grey : Colors.green;
+              DropdownButtonFormField<String>(
+                hint: const Text("Select Grade Level"),
+                items: <String>['5', '6'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text('Grade $value'),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedGradeLevel = value;
+                    _validateInputs();
+                  });
+                },
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _scoreController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.school),
+                  labelText: "Screening Score",
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (_) => _validateInputs(),
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.lock),
+                  labelText: "Password",
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
                     },
                   ),
                 ),
-                child: const Text(
-                  "Sign Up",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Colors.white,
-                
-                  )
-                
-                ),
+                onChanged: (_) => _validateInputs(),
               ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _confirmPasswordController,
+                obscureText: _obscureConfirmPassword,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.lock),
+                  labelText: "Confirm Password",
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureConfirmPassword = !_obscureConfirmPassword;
+                      });
+                    },
+                  ),
+                ),
+                onChanged: (_) => _validateInputs(),
+              ),
+              const SizedBox(height: 20),
+              if (_errorMessage != null)
+                Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              const SizedBox(height: 20),
+              if (_loading)
+                const CircularProgressIndicator(
+                  color: Colors.green,
+                ),
+              if (!_loading)
+                ElevatedButton(
+                  onPressed: _isButtonDisabled ? null : signUp,
+                  child: const Text("Sign Up"),
+                ),
+              const SizedBox(height: 20),
             ],
           ),
         ),

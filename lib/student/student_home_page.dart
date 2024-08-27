@@ -54,33 +54,26 @@ class _StudentHomePageState extends State<StudentHomePage> {
           ),
           drawer: StudentDrawer(studentId: studentId),
           body: Center(
-            child: GestureDetector(
-              onTap: () {
+            child: ElevatedButton(
+              onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => StudentAssessment(studentId: studentId)),
                 );
               },
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/images/Assessment.png',
-                      width: 200,
-                      height: 100,
-                      fit: BoxFit.cover,
-                    ),
-                    const Text(
-                      'Assessment',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF15A323), // Set your desired button color
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Text(
+                'Assessment',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
